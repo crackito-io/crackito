@@ -1,0 +1,78 @@
+@component('components/layouts/admin')
+    @slot('main')
+    <div class="pc-content">
+        <!-- [ breadcrumb ] start -->
+        <div class="page-header">
+            <div class="page-block">
+                <div class="row align-items-center">
+                    <div class="col-md-12">
+                        <ul class="breadcrumb mb-3">
+                            <li class="breadcrumb-item">
+                                <a href="/">Home</a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="/admin">Admin</a>
+                            </li>
+                            <li class="breadcrumb-item" aria-current="page">Users</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="page-header-title">
+                            <h2 class="mb-0">Users</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- [ breadcrumb ] end -->
+
+        <!-- [ Main Content ] start -->
+        <div class="row">
+            <!-- [ basic-table ] start -->
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-body table-border-style">
+                        <div class="table-responsive">
+                            <table class="table" id="pc-dt-simple">
+                                <thead>
+                                    <tr>
+                                        <th>Id</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>Julien Breton</td>
+                                        <td>julien.breton@iut-tlse3.fr</td>
+                                        <td>
+                                            <button id="btnGroupDrop1" type="button" class="btn btn-icon btn-link-primary"
+                                                data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                <i class="ti ti-dots"></i>
+                                            </button>
+                                            <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                                                <a class="dropdown-item" href="#!">Dropdown link</a>
+                                                <a class="dropdown-item" href="#!">Dropdown link</a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- [ basic-table ] end -->
+        </div>
+        <!-- [ Main Content ] end -->
+
+        <!-- [Page Specific JS] start -->
+        <script src="/js/plugins/simple-datatables.js"></script>
+        <script>
+            const dataTable = new simpleDatatables.DataTable("#pc-dt-simple");
+        </script>
+        <!-- [Page Specific JS] end -->
+    </div>
+    @end
+@end

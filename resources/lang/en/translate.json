@@ -1,0 +1,38 @@
+{
+    "dashboard": "Dashboard",
+    "students": "Students",
+    "classes": "Classes",
+    "exercises": "exercises",
+
+    "username": "Username",
+    "password": "Password",
+    "login": "Login",
+    "logout": "Logout",
+
+    "research": "Research",
+    "students_list": "List of students",
+    "student": "student",
+    "student_number_short": "student number",
+    "discord_link": "discord link",
+    "manage": "Manage",
+    "delete_student": "delete student",
+    "add_student_short": "add student",
+
+    "attention": "Attention",
+    "confim_delet_student": "Are you sure you want to delete these students ?",
+    "close": "close",
+    "confirm": "confirm",
+
+    "add_student_long": "Add a student",
+    "firstname": "Firstname",
+    "lastname": "Lastname",
+    "email_address": "Email address",
+    "student_number_long": "Student number",
+    "submit": "Submit",
+
+    "classes_list": "List of classes",
+    "add_class_short": "Add a class",
+
+    "exercises_list": "List of exercises",
+    "add_exercice_short": "Add an exercice"
+}

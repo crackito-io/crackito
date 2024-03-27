@@ -1,0 +1,101 @@
+<!-- [ Sidebar Menu ] start -->
+<nav class="pc-sidebar">
+    <div class="navbar-wrapper">
+        <div class="m-header">
+            <a href="/admin" class="b-brand text-primary">
+                <img src="/img/logo_long_admin.png" style="height: 50px;" />
+                <span class="badge bg-light-success rounded-pill ms-2 theme-version">{{version}}</span>
+            </a>
+        </div>
+
+
+        <div class="navbar-content">
+            <div class="card pc-user-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <img src="https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=JulienBreton&backgroundColor=ecad80,b6e3f4,c0aede,d1d4f9,ffd5dc,f2d3b1,ffdfbf&backgroundType=gradientLinear" alt="user-image"
+                                class="user-avtar wid-45 rounded-circle" />
+                        </div>
+                        <div class="flex-grow-1 ms-3 me-2">
+                            <h6 class="mb-0">Jonh Smith</h6>
+                            <small>Administrator</small>
+                        </div>
+                        <a class="btn btn-icon btn-link-secondary avtar" data-bs-toggle="collapse"
+                            href="#pc_sidebar_userlink">
+                            <svg class="pc-icon">
+                                <use xlink:href="#custom-sort-outline"></use>
+                            </svg>
+                        </a>
+                    </div>
+                    <div class="collapse pc-user-links" id="pc_sidebar_userlink">
+                        <div class="pt-3">
+                            <a href="/account">
+                                <i class="ti ti-user"></i>
+                                <span>My Account</span>
+                            </a>
+                            <a href="/logout">
+                                <i class="ti ti-power"></i>
+                                <span>Logout</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <ul class="pc-navbar">
+                <li class="pc-item">
+                    <a href="/admin" class="pc-link">
+                        <span class="pc-micon">
+                            <svg class="pc-icon">
+                                <use xlink:href="#custom-home"></use>
+                            </svg>
+                        </span>
+                        <span class="pc-mtext">Home</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a href="/admin/accounts" class="pc-link">
+                        <span class="pc-micon">
+                            <svg class="pc-icon">
+                                <use xlink:href="#custom-user"></use>
+                            </svg>
+                        </span>
+                        <span class="pc-mtext">Accounts</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a href="/admin/federations" class="pc-link">
+                        <span class="pc-micon">
+                            <svg class="pc-icon">
+                                <use xlink:href="#custom-story"></use>
+                            </svg>
+                        </span>
+                        <span class="pc-mtext">Federations</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a href="/admin/exercises" class="pc-link">
+                        <span class="pc-micon">
+                            <svg class="pc-icon">
+                                <use xlink:href="#custom-flag"></use>
+                            </svg>
+                        </span>
+                        <span class="pc-mtext">Exercises</span>
+                    </a>
+                </li>
+                <li class="pc-item">
+                    <a href="/admin/security" class="pc-link">
+                        <span class="pc-micon">
+                            <svg class="pc-icon">
+                                <use xlink:href="#custom-shield"></use>
+                            </svg>
+                        </span>
+                        <span class="pc-mtext">Security</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<!-- [ Sidebar Menu ] end -->

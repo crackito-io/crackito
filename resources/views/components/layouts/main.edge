@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="fr">
+@!component('components/partials/head_main')
+
+<body data-pc-preset="preset-1" data-pc-sidebar-caption="true" data-pc-direction="ltr" data-pc-theme_contrast=""
+    data-pc-theme="light" data-pc-direction="ltr">
+
+    @!component('components/partials/navbar_main')
+    @!component('components/partials/header_main')
+
+    <div class="pc-container">
+        {{{ await $slots.main() }}}
+    </div>
+    @!component('components/partials/footer')
+
+    <script>
+        layout_change("light");
+        layout_sidebar_change("false");
+        change_box_container("false");
+        layout_caption_change("true");
+        layout_rtl_change("false");
+        preset_change("preset-1");
+    </script>
+</body>
+
+</html>

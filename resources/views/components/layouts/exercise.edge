@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+@include('components/partials/head_main')
+
+<body data-pc-preset="preset-1" data-pc-sidebar-caption="true" data-pc-direction="ltr" data-pc-theme_contrast=""
+    data-pc-theme="light" data-pc-direction="ltr">
+
+    @include('components/partials/navbar_main')
+    @include('components/partials/header_main')
+
+    <div class="pc-container">
+        <div class="pc-content">
+            <!-- [ breadcrumb ] start -->
+            <div class="page-header">
+                <div class="page-block">
+                    <div class="row align-items-center">
+                        <div class="col-md-12">
+                            <ul class="breadcrumb mb-3">
+                                <li class="breadcrumb-item"><a href="/exercises">Exercises</a></li>
+                                <li class="breadcrumb-item" aria-current="page">{{ title }}</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="page-header-title">
+                                <h2 class="mb-0">{{ title }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- [ breadcrumb ] end -->
+
+            <div class="row">
+                <div class="col-lg-3 col-md-6">
+                    <div class="card bg-primary">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-8">
+                                    <h3 class="mb-1 text-white">{{ rank }} rank</h3>
+                                    <p class="mb-0 text-white">in your group</p>
+                                </div>
+                                <div class="col-4 text-end">
+                                    <i class="ti ti-trophy text-white f-36"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-8">
+                                    <h3 class="mb-1">{{ steps }} finished</h3>
+                                    <p class="text-muted mb-0">steps</p>
+                                </div>
+                                <div class="col-4 text-end">
+                                    <i class="ti ti-flag-3 f-36"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-8">
+                                    <h3 class="mb-1">{{ last_commit }} ago</h3>
+                                    <p class="text-muted mb-0">last commit</p>
+                                </div>
+                                <div class="col-4 text-end">
+                                    <i class="ti ti-brand-github f-36"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-8">
+                                    <h3 class="mb-1 text-success">{{ status }}</h3>
+                                    <p class="text-muted mb-0">exercise status</p>
+                                </div>
+                                <div class="col-4 text-end">
+                                    <i class="ti ti-lock-open text-success f-36"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="card">
+                        <div class="card-body py-0">
+                            <ul class="nav nav-tabs profile-tabs">
+                                <li class="nav-item">
+                                    <a class="nav-link activable" rule="/details" id="profile-tab-1" href="/exercises/{{exercise_id}}/details"
+                                        aria-selected="true">
+                                        <i class="ti ti-target me-2"></i>Exercise
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link activable" rule="/scoreboard" id="profile-tab-2" href="/exercises/{{exercise_id}}/scoreboard"
+                                        aria-selected="true">
+                                        <i class="ti ti-trophy me-2"></i>Scoreboard
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link activable" rule="/helper" id="profile-tab-2" href="/exercises/{{exercise_id}}/helper"
+                                        aria-selected="true">
+                                        <i class="ti ti-ghost me-2"></i>Helper
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link activable" rule="/logs" id="profile-tab-3" href="/exercises/{{exercise_id}}/logs"
+                                        aria-selected="true">
+                                        <i class="ti ti-file-text me-2"></i>Logs
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{{ await $slots.main() }}}
+
+        </div>
+    </div>
+    @include('components/partials/footer')
+
+    <script>
+        layout_change("light");
+        layout_sidebar_change("false");
+        change_box_container("false");
+        layout_caption_change("true");
+        layout_rtl_change("false");
+        preset_change("preset-1");
+        new SimpleBar(document.querySelector('.customer-scroll'));
+    </script>
+</body>
+
+</html>

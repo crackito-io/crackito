@@ -1,0 +1,63 @@
+@component('components/layouts/login')
+    @slot('main')
+        <div class="auth-main">
+            <div class="auth-wrapper v2">
+                <div class="auth-sidecontent">
+                    <img src="/img/img-auth-sideimg.jpg" alt="images" class="img-fluid img-auth-side">
+                </div>
+                <div class="auth-form">
+                    <div class="card my-5">
+                        <div class="card-body">
+                            <a href="/"><img src="/img/logo_long.png" class="mb-4 img-fluid" alt="img"
+                                    style="height: 40px;"></a>
+                            <h4 class="text-center f-w-500 mb-3">Login with your email</h4>
+                            <div class="form-group mb-3">
+                                <input type="email" class="form-control" id="floatingInput" placeholder="Email Address">
+                            </div>
+                            <div class="form-group mb-3">
+                                <input type="password" class="form-control" id="floatingInput1" placeholder="Password">
+                            </div>
+                            <div class="d-flex mt-1 justify-content-between align-items-right">
+                                <a href="/forgot-password">
+                                    <h6 class="text-secondary f-w-400 mb-0">Forgot Password?</h6>
+                                </a>
+                            </div>
+                            <div class="d-grid mt-4">
+                                <button id="loginBtn" type="button" class="btn btn-primary">Login</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            $('#loginBtn').on('click', ()=>{
+            const email = $('input[type="email"]').val()
+            const password = $('input[type="password"]').val()
+            
+            fetch(
+                '/login',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                }
+            )
+            .then((response) => {
+                if (response.status < 300) {
+                    window.location.href = "/";
+                }
+            })
+            .catch(error => {
+                console.error(error)
+            })
+        })
+        </script>
+    @end
+@end

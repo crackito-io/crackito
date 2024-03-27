@@ -1,0 +1,38 @@
+{
+    "dashboard": "Tableau de bord",
+    "students": "Étudiants",
+    "classes": "Classes",
+    "exercises": "exercises",
+
+    "username": "Nom d'utilisateur",
+    "password": "Mot de passe",
+    "login": "Connexion",
+    "logout": "Déconnexion",
+
+    "research": "Recherche",
+    "students_list": "Liste des étudiants",
+    "student": "étudiant",
+    "student_number_short": "numéro étudiant",
+    "discord_link": "lien discord",
+    "manage": "Gérer",
+    "delete_student": "supprimer étudiant",
+    "add_student_short": "ajouter étudiant",
+
+    "attention": "Attention",
+    "confim_delet_student": "Confirmez-vous vouloir supprimer ces étudiants ?",
+    "close": "fermer",
+    "confirm": "confirmer",
+
+    "add_student_long": "Ajouter un étudiant",
+    "firstname": "Prénom",
+    "lastname": "Nom",
+    "email_address": "Adresse mail",
+    "student_number_long": "Numéro d'étudiant",
+    "submit": "envoyer",
+
+    "classes_list": "Liste des classes",
+    "add_class_short": "Nouvelle classe",
+
+    "exercises_list": "Liste des exercises",
+    "add_exercice_short": "Nouvel exercice"
+}
