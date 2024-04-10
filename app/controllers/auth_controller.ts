@@ -39,6 +39,7 @@ export default class AuthController {
       firstname: account.Firstname,
       lastname: account.Lastname,
       email_address: account.email_address,
+      id_organization: account.id_organization,
     }
     const token = jwt.sign(tokenContent, env.get('APP_KEY'))
 
