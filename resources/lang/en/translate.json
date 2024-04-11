@@ -37,5 +37,8 @@
     "add_exercice_short": "Add an exercice",
 
     "users_list":"List of users",
-    "no_account_yet":"There's no account yet."
+    "no_account_yet":"There's no account yet.",
+
+    "error":"Error",
+    "unknown_error":"An unknown error occured while the page was loading"
 }

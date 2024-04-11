@@ -30,7 +30,8 @@ export default defineConfig({
     },
     () => import('@adonisjs/core/providers/edge_provider'),
     () => import('@adonisjs/static/static_provider'),
-    () => import('@adonisjs/i18n/i18n_provider')
+    () => import('@adonisjs/i18n/i18n_provider'),
+    () => import('@adonisjs/session/session_provider')
   ],
 
   /*
