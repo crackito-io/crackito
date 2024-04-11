@@ -34,5 +34,8 @@
     "add_class_short": "Add a class",
 
     "exercises_list": "List of exercises",
-    "add_exercice_short": "Add an exercice"
+    "add_exercice_short": "Add an exercice",
+
+    "users_list":"List of users",
+    "no_account_yet":"There's no account yet."
 }
