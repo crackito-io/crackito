@@ -13,7 +13,8 @@ export default class AccountsController {
 
     if (idOrganization === null) {
       session.flash('notification', {
-        type: i18n.t('translate.error'),
+        type: 'danger',
+        title: i18n.t('translate.error'),
         message: i18n.t('translate.unknown_error'),
       })
       return response.redirect().back()

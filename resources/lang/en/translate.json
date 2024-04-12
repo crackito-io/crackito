@@ -39,6 +39,9 @@
     "users_list":"List of users",
     "no_account_yet":"There's no account yet.",
 
+    "bug_notification_title":"Notification",
+    "bug_notification_message": "Notification message has not been received",
+
     "error":"Error",
     "unknown_error":"An unknown error occured while the page was loading"
 }
