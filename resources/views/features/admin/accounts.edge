@@ -1,29 +1,68 @@
 @component('components/layouts/admin')
     @slot('main')
     <div class="pc-content">
-      <p class="h1"> {{ t('translate.users_list') }}</p>
-
-      <div class="card new-cust-card">
-          <div class="customer-scroll" style=" position: relative; height: 520px;" data-simplebar="init"><div class="simplebar-wrapper" style="margin: 0px 0px -20px;"><div class="simplebar-height-auto-observer-wrapper"><div class="simplebar-height-auto-observer"></div></div><div class="simplebar-mask"><div class="simplebar-offset" style="right: 0px; bottom: 0px;"><div class="simplebar-content-wrapper" tabindex="0" role="region" aria-label="scrollable content" style="height: 100%; overflow: hidden scroll;"><div class="simplebar-content" style="padding: 0px 0px 20px;">
-            <div class="card-body p-b-0">
-              @if(accountsInOrganization.length > 0)
-                @each(account in accountsInOrganization)
-                <div class="align-middle m-b-25 align-items-center d-flex">
-                  <img src="https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=Max&amp;backgroundColor=ecad80,b6e3f4,c0aede,d1d4f9,ffd5dc,f2d3b1,ffdfbf&amp;backgroundType=gradientLinear" alt="user image" class="img-radius align-top m-r-15">
-                  <div class="d-inline-block">
-                    <h5 class="m-b-0">{{ account.Lastname }} {{ account.Firstname }}</h5>
-                  </div>
+        <!-- [ breadcrumb ] start -->
+        <div class="page-header">
+            <div class="page-block">
+                <div class="row align-items-center">
+                    <div class="col-md-12">
+                        <ul class="breadcrumb mb-3">
+                            <li class="breadcrumb-item"><a href="/">{{ t('translate.breadcrumb_home_page') }}</a></li>
+                            <li class="breadcrumb-item"><a href="/admin">{{ t('translate.breadcrumb_home_admin_page') }}</a></li>
+                            <li class="breadcrumb-item" aria-current="page">{{ t('translate.breadcrumb_home_admin_accounts_page') }}</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="page-header-title">
+                            <h2 class="mb-0">{{ t('translate.users_list') }}</h2>
+                        </div>
+                    </div>
                 </div>
-                @endeach
-              @else
-              <div class="alert alert-warning" role="alert">
-                {{ t('translate.no_account_yet') }}
-              </div>
-              @endif
             </div>
-          </div></div></div></div><div class="simplebar-placeholder" style="width: auto; height: 630px;"></div></div><div class="simplebar-track simplebar-horizontal" style="visibility: hidden;"><div class="simplebar-scrollbar" style="width: 0px; display: none;"></div></div><div class="simplebar-track simplebar-vertical" style="visibility: visible;"><div class="simplebar-scrollbar" style="height: 571px; transform: translate3d(0px, 0px, 0px); display: block;"></div></div>
         </div>
-      </div>
+        <!-- [ breadcrumb ] end -->
+
+
+
+        <!-- [ Main Content ] start -->
+        <div class="row">
+            <!-- [ sample-page ] start -->
+            <div class="col-sm-12">
+                @if(accountsInOrganization.length > 0)
+                <div class="card mx-0" style="height: 55vh;overflow:auto">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                <th style="border-top: none;text-align:center;">{{ t('translate.avatar_label') }}</th>
+                                <th style="border-top: none">{{ t('translate.first_name_label') }}</th>
+                                <th style="border-top: none">{{ t('translate.last_name_label') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @each(account in accountsInOrganization)
+                                <tr>
+                                    <td style="width:10%;">
+                                      <img width="50"
+                                      src="https://api.dicebear.com/7.x/adventurer-neutral/svg?seed={{ account.Firstname }}{{ account.Lastname }}&amp;
+                                      backgroundColor=ecad80,b6e3f4,c0aede,d1d4f9,ffd5dc,f2d3b1,ffdfbf&amp;
+                                      backgroundType=gradientLinear" alt="user image" class="img-radius mx-auto my-auto d-block">
+                                    </td>
+                                    <td style="width:45%">{{ account.Firstname }}</td>
+                                    <td style="width:45%">{{ account.Lastname }}</td>
+                                </tr>
+                                @endeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                @else
+                <div class="alert alert-warning" role="alert">
+                    {{ t('translate.no_account_yet') }}
+                </div>
+                @endif
+            </div>
+        </div>
     </div>
     @end
 @end

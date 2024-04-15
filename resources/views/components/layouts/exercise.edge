@@ -144,10 +144,7 @@
         new SimpleBar(document.querySelector('.customer-scroll'));
     </script>
 
-    @flashMessage('notification')
-    <script src="/js/plugins/notifier.js"></script>
-    <script>notifier.show("{{ $message.title || t('translate.bug_notification_title') }}", "{{ $message.message || t('translate.bug_notification_message') }}", "{{ $message.type || 'info' }}", "", {{ $message.delay || '4000' }})</script>
-    @end
+    @include('components/partials/notifier')
 </body>
 
 </html>

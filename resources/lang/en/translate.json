@@ -36,6 +36,10 @@
     "exercises_list": "List of exercises",
     "add_exercice_short": "Add an exercice",
 
+    "breadcrumb_home_page":"Home",
+    "breadcrumb_home_admin_page":"Admin",
+    "breadcrumb_home_admin_accounts_page":"Accounts",
+
     "users_list":"List of users",
     "no_account_yet":"There's no account yet.",
 
@@ -43,5 +47,9 @@
     "bug_notification_message": "Notification message has not been received",
 
     "error":"Error",
-    "unknown_error":"An unknown error occured while the page was loading"
+    "unknown_error":"An unknown error occured while the page was loading",
+
+    "avatar_label":"Avatar",
+    "first_name_label":"First Name",
+    "last_name_label":"Last Name"
 }
