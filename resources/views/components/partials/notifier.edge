@@ -1,4 +1,27 @@
 @flashMessage('notification')
+@let(notifications = flashMessages.all()['notification'])
 <script src="/js/plugins/notifier.js"></script>
-<script>notifier.show("{{ $message.title || t('translate.bug_notification_title') }}", "{{ $message.message || t('translate.bug_notification_message') }}", "{{ $message.type || 'info' }}", "", {{ $message.delay || '4000' }})</script>
+@if(Array.isArray(notifications))
+@let(interval = 0)
+@each($message in notifications)
+<script>
+  setTimeout(() => {notifier.show("{{ $message.title || t('translate.bug_notification_title') }}",
+    "{{ $message.message || t('translate.bug_notification_message') }}",
+    "{{ $message.type || 'info' }}",
+    "",
+    {{ $message.delay || '6000' }}
+  )}, {{ interval }})
+  {{ interval = interval + ($message.interval || '1000') }}
+</script>
+@endeach
+@else
+<script>
+  notifier.show("{{ $message.title || t('translate.bug_notification_title') }}",
+    "{{ $message.message || t('translate.bug_notification_message') }}",
+    "{{ $message.type || 'info' }}",
+    "",
+    {{ $message.delay || '6000' }}
+  )
+</script>
+@end
 @end
