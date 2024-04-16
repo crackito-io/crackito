@@ -46,10 +46,17 @@
     "bug_notification_title":"Notification",
     "bug_notification_message": "Notification message has not been received",
 
-    "error":"Error",
+    "error":"Error!",
     "unknown_error":"An unknown error occured while the page was loading",
 
     "avatar_label":"Avatar",
     "first_name_label":"First Name",
-    "last_name_label":"Last Name"
+    "last_name_label":"Last Name",
+
+    "missing_perm":"Missing permission!",
+
+    "view_users_missing_perm":"You do not have the rights to list users. Please contact your organisation's administrator.",
+    "delete_users_missing_perm":"You do not have the rights to delete users. Please contact your organisation's administrator.",
+    "create_users_missing_perm":"You do not have the rights to create users. Please contact your organisation's administrator.",
+    "edit_users_missing_perm":"You do not have the rights to edit users. Please contact your organisation's administrator."
 }

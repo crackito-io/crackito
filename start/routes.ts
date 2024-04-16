@@ -55,7 +55,9 @@ router
       return view.render('features/admin/home')
     })
 
-    router.get('/accounts', [AccountsController, 'listAccounts'])
+    router
+      .get('/accounts', [AccountsController, 'listAccounts'])
+      .use(middleware.permissions(['view_users']))
   })
   .prefix('/admin')
   .middleware([])

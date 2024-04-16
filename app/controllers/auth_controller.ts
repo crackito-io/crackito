@@ -3,10 +3,11 @@ import { PostLoginDto, PostLoginSchema } from '../dto/PostLogin.dto.js'
 import env from '#start/env'
 import { prisma } from '#config/app'
 import jwt from 'jsonwebtoken';
-import bcrypt from "bcrypt";
+import bcrypt from 'bcrypt'
+import fs from 'node:fs/promises'
 
 export default class AuthController {
-  public async login({ request, response }: HttpContext) {
+  async login({ request, response }: HttpContext) {
     let postLoginDto: PostLoginDto;
     try {
       postLoginDto = PostLoginSchema.parse(request.body())
@@ -33,6 +34,53 @@ export default class AuthController {
       return
     }
 
+    // load permissions to binary value association file
+    let associativePermissions = null
+    try {
+      const data = await fs.readFile('resources/permissions/permissions.json', 'utf8')
+      associativePermissions = JSON.parse(data)
+    } catch (error) {
+      response.internalServerError({
+        message: 'The server encountered an error and could not complete your request',
+      })
+      return
+    }
+    if (associativePermissions === null) {
+      response.internalServerError({
+        message: 'The server encountered an error and could not complete your request',
+      })
+      return
+    }
+
+    // get user roles
+    let accountRoles = await prisma.account_role.findMany({
+      where: {
+        id_account: {
+          equals: account.id_account,
+        },
+      },
+      // get role list (not get by default)
+      include: {
+        role: {
+          include: {
+            role_permission: true,
+          },
+        },
+      },
+    })
+
+    // get user permissions binary value from roles
+
+    let sumPerms = 0
+
+    if (accountRoles !== null) {
+      for (let accountRole of accountRoles) {
+        for (let permission of accountRole.role.role_permission) {
+          sumPerms += associativePermissions[permission.code_permission]
+        }
+      }
+    }
+
     // Creating the jwt token
     const tokenContent = {
       id_account: account.id_account,
@@ -40,7 +88,9 @@ export default class AuthController {
       lastname: account.Lastname,
       email_address: account.email_address,
       id_organization: account.id_organization,
+      permission: sumPerms,
     }
+
     const token = jwt.sign(tokenContent, env.get('APP_KEY'))
 
     response.cookie('jwt', token)

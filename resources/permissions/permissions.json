@@ -1,0 +1,6 @@
+{
+  "view_users":1,
+  "create_users":2,
+  "edit_users":4,
+  "delete_users":8
+}
