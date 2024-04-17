@@ -12,7 +12,7 @@ export default class AccountsController {
     const idOrganization = jwtToken.id_organization
 
     if (idOrganization === null) {
-      session.flash('notification', {
+      session.flash('notifications', {
         type: 'danger',
         title: i18n.t('translate.error'),
         message: i18n.t('translate.unknown_error'),

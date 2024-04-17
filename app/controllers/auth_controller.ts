@@ -4,7 +4,7 @@ import env from '#start/env'
 import { prisma } from '#config/app'
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt'
-import fs from 'node:fs/promises'
+import Permissions from '#utils/permissions_loader';
 
 export default class AuthController {
   async login({ request, response }: HttpContext) {
@@ -34,17 +34,10 @@ export default class AuthController {
       return
     }
 
-    // load permissions to binary value association file
-    let associativePermissions = null
-    try {
-      const data = await fs.readFile('resources/permissions/permissions.json', 'utf8')
-      associativePermissions = JSON.parse(data)
-    } catch (error) {
-      response.internalServerError({
-        message: 'The server encountered an error and could not complete your request',
-      })
-      return
-    }
+    // load permissions to integer values association file
+    let associativePermissions = Permissions.getInstance().getJsonObject()
+
+    // check if an exception occured or if the file exists but is empty (no exception but null)
     if (associativePermissions === null) {
       response.internalServerError({
         message: 'The server encountered an error and could not complete your request',

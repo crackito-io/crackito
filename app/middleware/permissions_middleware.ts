@@ -1,10 +1,10 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
 import { jwtDecode } from 'jwt-decode'
-import fs from 'node:fs/promises'
+import Permissions from '#utils/permissions_loader'
 
 export default class PermissionsMiddleware {
-  async handle(ctx: HttpContext, next: NextFn, permissions: Array<string>) {
+  async handle(ctx: HttpContext, next: NextFn, permissions: string[]) {
     const jwtToken: any = jwtDecode(ctx.request.cookie('jwt'))
     const jwtTokenPermission = jwtToken.permission
 
@@ -13,7 +13,7 @@ export default class PermissionsMiddleware {
     }
 
     // load permissions to integer values association file
-    let associativePermissions = await this.getPermissionsJsonObject()
+    let associativePermissions = Permissions.getInstance().getJsonObject()
 
     // check if an exception occured or if the file exists but is empty (no exception but null)
     if (associativePermissions === null) {
@@ -21,18 +21,19 @@ export default class PermissionsMiddleware {
     }
 
     // calculate required permissions integer from permissions list
-    let requiredPermissionIntegerValue = 0
+    let requiredPermissionsIntegerValue = 0
     for (let perm of permissions) {
-      requiredPermissionIntegerValue += associativePermissions[perm]
+      requiredPermissionsIntegerValue += associativePermissions[perm]
     }
 
     // check authorization with specific permission integer value
-    let authorized = this.isAuthorized(jwtTokenPermission, requiredPermissionIntegerValue)
+    let authorized = this.isAuthorized(jwtTokenPermission, requiredPermissionsIntegerValue)
 
     if (!authorized) {
       // if not authorized, search unique or multiple missing permission(s)
-      let missingPermissionsList = this.getMissingPermissions(jwtTokenPermission, requiredPermissionIntegerValue, associativePermissions)
-      ctx.session.flash('notification',
+      let missingPermissionsList = this.getMissingPermissions(jwtTokenPermission, requiredPermissionsIntegerValue, associativePermissions)
+      console.log(ctx.session.flash('notifications'))
+      ctx.session.flash('notifications',
         missingPermissionsList.map((_: string) => ({
           type: 'danger',
           title: ctx.i18n.t('translate.missing_perm'),
@@ -47,7 +48,7 @@ export default class PermissionsMiddleware {
   }
 
   raiseUnknownError(ctx: HttpContext) {
-    ctx.session.flash('notification', {
+    ctx.session.flash('notifications', {
       type: 'danger',
       title: ctx.i18n.t('translate.error'),
       message: ctx.i18n.t('translate.unknown_error'),
@@ -55,24 +56,12 @@ export default class PermissionsMiddleware {
     ctx.response.redirect().back()
   }
 
-  async getPermissionsJsonObject() {
-    let associativePermissions = null
-    try {
-      const data = await fs.readFile('resources/permissions/permissions.json', 'utf8')
-      associativePermissions = JSON.parse(data)
-    } catch (error) {
-      return null
-    }
-
-    return associativePermissions
-  }
-
-  isAuthorized(jwtTokenPermission: number, requiredPermissionIntegerValue: number) {
+  isAuthorized(jwtTokenPermission: number, requiredPermissionsIntegerValue: number) {
     // check authorization by comparing token permission integer value and required permission integer value
-    return (jwtTokenPermission & requiredPermissionIntegerValue) === requiredPermissionIntegerValue
+    return (jwtTokenPermission & requiredPermissionsIntegerValue) === requiredPermissionsIntegerValue
   }
 
-  getMissingPermissions(jwtTokenPermission: number, requiredPermissionIntegerValue: number, associativePermissions: any): string[] {
+  getMissingPermissions(jwtTokenPermission: number, requiredPermissionsIntegerValue: number, associativePermissions: { [key: string]: number }): string[] {
     const invertedAssociativePermissions = Object.fromEntries(
       Object.entries(associativePermissions).map(([key, value]) => [value, key])
     )
@@ -81,7 +70,7 @@ export default class PermissionsMiddleware {
     let missingPermissionsList = []
 
     // get value of the missing permission(s)
-    missingPermissionsIntegerValue = requiredPermissionIntegerValue - (jwtTokenPermission & requiredPermissionIntegerValue)
+    missingPermissionsIntegerValue = requiredPermissionsIntegerValue - (jwtTokenPermission & requiredPermissionsIntegerValue)
 
     // if there is only one missing permission, if undefined, then missingPermissionsIntegerValue is not a 2^n value
     // that means there are more than one missing permission, we'll have to decompose the value in a 2^n sum
