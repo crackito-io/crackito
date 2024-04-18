@@ -60,7 +60,7 @@ router
       .use(middleware.permissions(['view_users']))
   })
   .prefix('/admin')
-  .middleware([])
+  .use([middleware.auth()])
 
 /*
  *=================================================================

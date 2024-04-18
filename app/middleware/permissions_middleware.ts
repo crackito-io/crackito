@@ -32,7 +32,6 @@ export default class PermissionsMiddleware {
     if (!authorized) {
       // if not authorized, search unique or multiple missing permission(s)
       let missingPermissionsList = this.getMissingPermissions(jwtTokenPermission, requiredPermissionsIntegerValue, associativePermissions)
-      console.log(ctx.session.flash('notifications'))
       ctx.session.flash('notifications',
         missingPermissionsList.map((_: string) => ({
           type: 'danger',
