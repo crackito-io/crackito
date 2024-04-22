@@ -12,6 +12,7 @@ import { middleware } from './kernel.js'
 import AuthController from '#controllers/auth_controller'
 import ExercisesController from '#controllers/exercises_controller'
 import ApiEndpointsController from '#controllers/api_endpoints_controller'
+import AccountsController from '#controllers/accounts_controller'
 
 /*
  *=================================================================
@@ -54,12 +55,12 @@ router
       return view.render('features/admin/home')
     })
 
-    router.get('/accounts', async ({ view }) => {
-      return view.render('features/admin/accounts')
-    })
+    router
+      .get('/accounts', [AccountsController, 'listAccounts'])
+      .use(middleware.permissions(['view_users']))
   })
   .prefix('/admin')
-  .middleware([])
+  .use([middleware.auth()])
 
 /*
  *=================================================================

@@ -29,7 +29,9 @@ export default defineConfig({
       environment: ['repl', 'test'],
     },
     () => import('@adonisjs/core/providers/edge_provider'),
-    () => import('@adonisjs/static/static_provider')
+    () => import('@adonisjs/static/static_provider'),
+    () => import('@adonisjs/i18n/i18n_provider'),
+    () => import('@adonisjs/session/session_provider')
   ],
 
   /*
@@ -72,6 +74,10 @@ export default defineConfig({
   },
   {
     pattern: 'public/**',
+    reloadServer: false,
+  },
+  {
+    pattern: 'resources/lang/**/*.{json,yaml,yml}',
     reloadServer: false,
   }
   ]
