@@ -67,10 +67,16 @@ export default class AuthController {
     let sumPerms = 0
 
     if (accountRoles !== null) {
-      for (let accountRole of accountRoles) {
-        for (let permission of accountRole.role.role_permission) {
-          sumPerms += associativePermissions[permission.code_permission]
-        }
+      let codePermissions = [
+        ...new Set(
+          accountRoles.flatMap((accountRole) =>
+            accountRole.role.role_permission.map((permission) => permission.code_permission)
+          )
+        ),
+      ]
+
+      for (let codePermission of codePermissions) {
+        sumPerms += associativePermissions[codePermission]
       }
     }
 
