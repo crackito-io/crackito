@@ -13,17 +13,19 @@ export default class PermissionsMiddleware {
     }
 
     // load permissions to integer values association file
-    let associativePermissions = Permissions.getInstance().getJsonObject()
+    let associativePermissions = await Permissions.getInstance()
 
     // check if an exception occured or if the file exists but is empty (no exception but null)
-    if (associativePermissions === null) {
+    if (Object.keys(associativePermissions).length === 0) {
       return this.raiseUnknownError(ctx)
     }
 
     // calculate required permissions integer from permissions list
     let requiredPermissionsIntegerValue = 0
     for (let perm of permissions) {
-      requiredPermissionsIntegerValue += associativePermissions[perm]
+      if (Object.keys(associativePermissions).includes(perm)) {
+        requiredPermissionsIntegerValue += associativePermissions[perm]
+      }
     }
 
     // check authorization with specific permission integer value

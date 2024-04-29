@@ -35,10 +35,10 @@ export default class AuthController {
     }
 
     // load permissions to integer values association file
-    let associativePermissions = Permissions.getInstance().getJsonObject()
+    let associativePermissions = await Permissions.getInstance()
 
     // check if an exception occured or if the file exists but is empty (no exception but null)
-    if (associativePermissions === null) {
+    if (Object.keys(associativePermissions).length === 0) {
       response.internalServerError({
         message: 'The server encountered an error and could not complete your request',
       })

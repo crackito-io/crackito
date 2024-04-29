@@ -11,7 +11,7 @@
     "",
     {{ $message.delay || '6000' }}
   )}, {{ interval }})
-  {{ interval = interval + ($message.interval || '1000') }}
+  {{ interval = interval + ($message.interval || 500) }}
 </script>
 @endeach
 @else
