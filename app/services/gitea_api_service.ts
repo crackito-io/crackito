@@ -67,6 +67,23 @@ export default class GiteaApiService {
     })
   }
 
+  private async repoFromTemplate(repo_name: string, fork_name: string) {
+    const url = `${this.api_url}/repos/${this.owner_name}/${repo_name}/generate`
+    const body = {
+      name: fork_name,
+      owner: this.owner_name,
+      default_branch: 'main',
+      git_content: true,
+      private: true,
+      git_hooks: false,
+      labels: false,
+      webhooks: false,
+    }
+    const result = await this.postMethod(url, body, { Authorization: this.access_token })
+
+    return result.data.name
+  }
+
   private async getOWner() {
     if (this.owner_name) {
       return
