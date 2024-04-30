@@ -46,6 +46,7 @@
     "bug_notification_title":"Notification",
     "bug_notification_message": "Notification message has not been received",
 
+    "success":"Succes!",
     "error":"Error!",
     "unknown_error":"An unknown error occured while the page was loading",
 
@@ -58,5 +59,18 @@
     "view_users_missing_perm":"You do not have the rights to list users. Please contact your organisation's administrator.",
     "delete_users_missing_perm":"You do not have the rights to delete users. Please contact your organisation's administrator.",
     "create_users_missing_perm":"You do not have the rights to create users. Please contact your organisation's administrator.",
-    "edit_users_missing_perm":"You do not have the rights to edit users. Please contact your organisation's administrator."
+    "edit_users_missing_perm":"You do not have the rights to edit users. Please contact your organisation's administrator.",
+
+    "delete_button":"Delete",
+
+    "delete_confirmation_text":"Are you sure you want to delete this account ?",
+    "delete_confirmation_button":"Delete permanently",
+    "cancel":"Cancel",
+    "delete":"Delete",
+
+    "not_authorized_error": "You are not allowed to do this action (refresh the page if you think you are)",
+
+    "user_not_found_on_delete_error":"You can't delete a non existing user",
+    "user_not_in_organization_on_delete_error":"You can't delete a user not in your organization",
+    "user_delete_done_success":"The user is now deleted"
 }

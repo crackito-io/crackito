@@ -22,7 +22,25 @@
         </div>
         <!-- [ breadcrumb ] end -->
 
-
+        <!-- [ Delete Pop-up ] start -->
+        <div id="delete-pop-up" class="modal fade" tabindex="-1" aria-labelledby="delete-pop-up-label" style="display: none;" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="delete-pop-up-label"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <p>{{ t('translate.delete_confirmation_text') }}</p>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t('translate.cancel') }}</button>
+                <button id="delete-button" type="button" class="btn btn-danger" data-bs-dismiss="modal">{{ t('translate.delete_confirmation_button') }}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- [ Delete Pop-up ] end -->
 
         <!-- [ Main Content ] start -->
         <div class="row">
@@ -41,7 +59,7 @@
                             </thead>
                             <tbody>
                                 @each(account in accountsInOrganization)
-                                <tr>
+                                <tr id="{{ account.id_account }}" class="lst-users-element">
                                     <td style="width:10%;">
                                       <img width="50"
                                       src="https://api.dicebear.com/7.x/adventurer-neutral/svg?seed={{ account.Firstname }}{{ account.Lastname }}&amp;
@@ -50,6 +68,11 @@
                                     </td>
                                     <td style="width:45%">{{ account.Firstname }}</td>
                                     <td style="width:45%">{{ account.Lastname }}</td>
+                                    <td class="lst-users-element-actions">
+                                        <li class="list-inline-item">
+                                          <button onclick="deleteUserPopUp({{ account.id_account }}, '{{ account.Firstname }} {{ account.Lastname}}')"  data-bs-toggle="modal" data-bs-target="#delete-pop-up" type="button" class="btn btn-outline-danger d-inline-flex"><i class="ti ti-trash me-1"></i>{{ t('translate.delete_button') }}</button>
+                                        </li>
+                                    </td>
                                 </tr>
                                 @endeach
                             </tbody>
@@ -64,5 +87,8 @@
             </div>
         </div>
     </div>
+    <script>const deleteText = "{{ t('translate.delete') }} ";</script>
+    <script src="/js/crackito.js"></script>
+    <script src="/js/list-accounts.js"></script>
     @end
 @end

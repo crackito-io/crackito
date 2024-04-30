@@ -1,6 +1,5 @@
 @flashMessage('notifications')
 @let(notifications = flashMessages.all()['notifications'])
-<script src="/js/plugins/notifier.js"></script>
 @if(Array.isArray(notifications))
 @let(interval = 0)
 @each($message in notifications)
