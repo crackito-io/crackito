@@ -89,6 +89,7 @@ router
         router.post('/git-event', [ApiEndpointsController, 'gitEvent'])
         router.post('/ci-result/:token', [ApiEndpointsController, 'ciResult'])
         router.post('/repos', [ApiEndpointsController, 'createRepo'])
+        router.put('/repos', [ApiEndpointsController, 'addMemberToRepo'])
       })
       .prefix('/endpoint')
   })

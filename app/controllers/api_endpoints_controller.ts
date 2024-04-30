@@ -38,4 +38,22 @@ export default class ApiEndpointsController {
     let result = await giteaApiService.createRepository(name)
     response.send(result)
   }
+
+  @inject()
+  async addMemberToRepo({ request, response }: HttpContext, giteaApiService: GiteaApiService) {
+    const body = request.body()
+
+    if (!body.name || !body.members) {
+      response.badRequest({ message: 'Repo name and members are required' })
+    }
+
+    for (let member of body.members) {
+      let result = await giteaApiService.addMemberToRepository(body.name, member)
+      if (result.status === 404) {
+        response.badRequest({ message: result.statusText })
+      }
+    }
+
+    response.send({ message: 'Members added successfully' })
+  }
 }
