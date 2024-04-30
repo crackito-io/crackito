@@ -18,6 +18,7 @@ export default class GiteaApiService {
             auto_init: true,
             default_branch: 'main',
             private: true,
+            template: true,
           },
           {
             Authorization: this.access_token,
