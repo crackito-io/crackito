@@ -34,14 +34,24 @@ export default class PermissionsMiddleware {
     if (!authorized) {
       // if not authorized, search unique or multiple missing permission(s)
       let missingPermissionsList = this.getMissingPermissions(jwtTokenPermission, requiredPermissionsIntegerValue, associativePermissions)
-      ctx.session.flash('notifications',
-        missingPermissionsList.map((_: string) => ({
-          type: 'danger',
-          title: ctx.i18n.t('translate.missing_perm'),
-          message: ctx.i18n.t(`translate.${_.toLowerCase()}_missing_perm`),
-        }))
-      )
-      return ctx.response.redirect().back()
+      if (ctx.request.ajax()) {
+        return ctx.response.status(403).send(
+          missingPermissionsList.map((_: string) => ({
+            status_code: 403,
+            status_message: ctx.i18n.t(`translate.${_.toLowerCase()}_missing_perm`),
+            title: ctx.i18n.t('translate.missing_perm'),
+          }))
+        )
+      } else {
+        ctx.session.flash('notifications',
+          missingPermissionsList.map((_: string) => ({
+            type: 'danger',
+            title: ctx.i18n.t('translate.missing_perm'),
+            message: ctx.i18n.t(`translate.${_.toLowerCase()}_missing_perm`),
+          }))
+        )
+        return ctx.response.redirect().back()
+      }
     }
 
     const output = await next()
