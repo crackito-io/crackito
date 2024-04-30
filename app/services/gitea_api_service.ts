@@ -49,6 +49,14 @@ export default class GiteaApiService {
     }
   }
 
+  async initTP(repo_name: string, members: Array<string>) {
+    await this.getOWner()
+    let members_repo = await this.repoFromTemplate(repo_name, `${repo_name}-${members.join('-')}`)
+    for (let member of members) {
+      await this.addMemberToRepository(members_repo, member)
+    }
+  }
+
   private postMethod(url: string, body: object, headers: object) {
     return axios.post(url, body, {
       headers: headers,

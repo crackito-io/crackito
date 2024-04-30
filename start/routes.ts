@@ -88,8 +88,13 @@ router
       .group(() => {
         router.post('/git-event', [ApiEndpointsController, 'gitEvent'])
         router.post('/ci-result/:token', [ApiEndpointsController, 'ciResult'])
-        router.post('/repos', [ApiEndpointsController, 'createRepo'])
-        router.put('/repos', [ApiEndpointsController, 'addMemberToRepo'])
+        router
+          .group(() => {
+            router.post('/', [ApiEndpointsController, 'createRepo'])
+            router.put('/', [ApiEndpointsController, 'addMemberToRepo'])
+            router.post('/fork', [ApiEndpointsController, 'createStudentTP'])
+          })
+          .prefix('/repos')
       })
       .prefix('/endpoint')
   })

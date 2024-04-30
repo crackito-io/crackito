@@ -36,7 +36,7 @@ export default class ApiEndpointsController {
     let name: string = body.name.replace(/\s+/g, ' ').replace(/\ /gi, '-')
 
     let result = await giteaApiService.createRepository(name)
-    response.send(result)
+    response.send(result.data)
   }
 
   @inject()
@@ -55,5 +55,19 @@ export default class ApiEndpointsController {
     }
 
     response.send({ message: 'Members added successfully' })
+  }
+
+  @inject()
+  async createStudentTP({ request, response }: HttpContext, giteaApiService: GiteaApiService) {
+    const body = request.body()
+
+    if (!body.name || !body.members) {
+      response.badRequest({ message: 'Repo name and members are required' })
+    }
+    for (let member of body.members) {
+      await giteaApiService.initTP(body.name, member)
+    }
+
+    response.send({ message: 'Fork created successfully' })
   }
 }
