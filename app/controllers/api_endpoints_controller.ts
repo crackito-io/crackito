@@ -1,3 +1,4 @@
+import GiteaApiService from '#services/gitea_api_service'
 import WoodpeckerApiService from '#services/woodpecker_api_service'
 import { inject } from '@adonisjs/core'
 import { HttpContext } from '@adonisjs/core/http'
@@ -15,12 +16,58 @@ export default class ApiEndpointsController {
     try {
       await woodpeckerApiService.triggerPipeline(repo_id, default_branch)
     } catch (error) {
-      response.badRequest({ message: "Error during the triggering of the pipeline." })
+      response.badRequest({ message: 'Error during the triggering of the pipeline.' })
       return
     }
   }
 
-  async ciResult({request, response}: HttpContext){
+  async ciResult({ request, response }: HttpContext) {
     console.log(request.body().status)
+  }
+
+  @inject()
+  async createRepo({ request, response }: HttpContext, giteaApiService: GiteaApiService) {
+    const body = request.body()
+
+    if (!body.name) {
+      response.badRequest({ message: 'Name is required' })
+    }
+
+    let name: string = body.name.replace(/\s+/g, ' ').replace(/\ /gi, '-')
+
+    let result = await giteaApiService.createRepository(name)
+    response.send(result.data)
+  }
+
+  @inject()
+  async addMemberToRepo({ request, response }: HttpContext, giteaApiService: GiteaApiService) {
+    const body = request.body()
+
+    if (!body.name || !body.members) {
+      response.badRequest({ message: 'Repo name and members are required' })
+    }
+
+    for (let member of body.members) {
+      let result = await giteaApiService.addMemberToRepository(body.name, member)
+      if (result.status === 404) {
+        response.badRequest({ message: result.statusText })
+      }
+    }
+
+    response.send({ message: 'Members added successfully' })
+  }
+
+  @inject()
+  async createStudentTP({ request, response }: HttpContext, giteaApiService: GiteaApiService) {
+    const body = request.body()
+
+    if (!body.name || !body.members) {
+      response.badRequest({ message: 'Repo name and members are required' })
+    }
+    for (let member of body.members) {
+      await giteaApiService.initTP(body.name, member)
+    }
+
+    response.send({ message: 'Fork created successfully' })
   }
 }

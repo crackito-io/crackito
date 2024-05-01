@@ -85,10 +85,18 @@ router.get('/forgot-password', async ({ view }) => {
 
 router
   .group(() => {
-    router.group(()=>{
-      router.post('/git-event', [ApiEndpointsController, 'gitEvent'])
-      router.post('/ci-result/:token', [ApiEndpointsController, 'ciResult'])
-    })
-    .prefix('/endpoint')
+    router
+      .group(() => {
+        router.post('/git-event', [ApiEndpointsController, 'gitEvent'])
+        router.post('/ci-result/:token', [ApiEndpointsController, 'ciResult'])
+        router
+          .group(() => {
+            router.post('/', [ApiEndpointsController, 'createRepo'])
+            router.put('/', [ApiEndpointsController, 'addMemberToRepo'])
+            router.post('/fork', [ApiEndpointsController, 'createStudentTP'])
+          })
+          .prefix('/repos')
+      })
+      .prefix('/endpoint')
   })
   .prefix('/api/v1')
