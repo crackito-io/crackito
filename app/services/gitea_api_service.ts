@@ -6,6 +6,11 @@ export type GiteaWebhook = {
   secret: string
 }
 
+export type GiteaProtectedBranch = {
+  branch: string
+  files: Array<string>
+}
+
 export class GiteaApiService {
   private owner_name: string = ''
   private access_token: string = `Bearer ${env.get('GITEA_TOKEN')}`
@@ -54,13 +59,14 @@ export class GiteaApiService {
     }
   }
 
-  async initTP(repo_name: string, members: Array<string>, webhook: GiteaWebhook) {
+  async initTP(repo_name: string, members: Array<string>, webhook: GiteaWebhook,protection: GiteaProtectedBranch) {
     await this.getOWner()
     let members_repo = await this.repoFromTemplate(repo_name, `${repo_name}-${members.join('-')}`)
     for (let member of members) {
       await this.addMemberToRepository(members_repo, member)
     }
     await this.addWebhook(members_repo, webhook)
+    await this.protectBranch(members_repo, protection)
   }
 
   private postMethod(url: string, body: object, headers: object) {
@@ -98,6 +104,17 @@ export class GiteaApiService {
     }
     const result = await this.postMethod(url, body, { Authorization: this.access_token })
 
+    return result
+  }
+
+  private async protectBranch(repo_name: string, protection: GiteaProtectedBranch) {
+    const url = `${this.api_url}/repos/${this.owner_name}/${repo_name}/branch_protections`
+    const body = {
+      branch_name: protection.branch,
+      enable_push: true,
+      protected_file_patterns: protection.files.join(';'),
+    }
+    const result = await this.postMethod(url, body, { Authorization: this.access_token })
     return result
   }
 
