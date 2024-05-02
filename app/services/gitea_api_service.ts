@@ -1,7 +1,12 @@
 import env from '#start/env'
 import axios from 'axios'
 
-export default class GiteaApiService {
+export type GiteaWebhook = {
+  url: string
+  secret: string
+}
+
+export class GiteaApiService {
   private owner_name: string = ''
   private access_token: string = `Bearer ${env.get('GITEA_TOKEN')}`
   private api_url: string = `${env.get('GITEA_URL')}/api/v1`
@@ -49,12 +54,13 @@ export default class GiteaApiService {
     }
   }
 
-  async initTP(repo_name: string, members: Array<string>) {
+  async initTP(repo_name: string, members: Array<string>, webhook: GiteaWebhook) {
     await this.getOWner()
     let members_repo = await this.repoFromTemplate(repo_name, `${repo_name}-${members.join('-')}`)
     for (let member of members) {
       await this.addMemberToRepository(members_repo, member)
     }
+    await this.addWebhook(members_repo, webhook)
   }
 
   private postMethod(url: string, body: object, headers: object) {
@@ -73,6 +79,26 @@ export default class GiteaApiService {
     return axios.put(url, body, {
       headers: headers,
     })
+  }
+
+  private async addWebhook(repo_name: string, webhook: GiteaWebhook) {
+    await this.getOWner()
+    const url = `${this.api_url}/repos/${this.owner_name}/${repo_name}/hooks`
+    const body = {
+      active: true,
+      type: 'gitea',
+      authorization_header: webhook.secret,
+      branch_filter: 'main',
+      config: {
+        url: webhook.url,
+        content_type: 'json',
+        http_method: 'post',
+      },
+      events: ['push'],
+    }
+    const result = await this.postMethod(url, body, { Authorization: this.access_token })
+
+    return result
   }
 
   private async repoFromTemplate(repo_name: string, fork_name: string) {
