@@ -55,14 +55,28 @@ export class GiteaApiService {
     }
   }
 
-  async initTP(repo_name: string, members: Array<string>, webhook: GiteaWebhook,protection: GiteaProtectedBranch) {
+  async initTP(
+    repo_name: string,
+    members: Array<string>,
+    webhook: GiteaWebhook,
+    protection: GiteaProtectedBranch
+  ) {
     await this.getOWner()
-    let members_repo = await this.repoFromTemplate(repo_name, `${repo_name}-${members.join('-')}`)
-    for (let member of members) {
-      await this.addMemberToRepository(members_repo, member)
+    let newName = `${repo_name}-${members.join('-')}`
+    let membersRepo = await this.repoFromTemplate(repo_name, newName)
+
+    if (membersRepo.status === 422) {
+      throw new Error(membersRepo.statusText + ' ' + repo_name)
+    } else if (membersRepo.status !== 201) {
+      throw new Error(membersRepo.statusText + ' ' + newName)
     }
-    await this.addWebhook(members_repo, webhook)
-    await this.protectBranch(members_repo, protection)
+    let repoName = membersRepo.data.name
+
+    for (let member of members) {
+      await this.addMemberToRepository(repoName, member)
+    }
+    await this.addWebhook(repoName, webhook)
+    await this.protectBranch(repoName, protection)
   }
 
   private postMethod(url: string, body: object, headers: object) {
@@ -115,7 +129,7 @@ export class GiteaApiService {
   }
 
   private async repoFromTemplate(repo_name: string, fork_name: string) {
-    const url = `${this.api_url}/repos/${this.owner_name}/${repo_name}/generate`
+    const url = `/repos/${this.owner_name}/${repo_name}/generate`
     const body = {
       name: fork_name,
       owner: this.owner_name,
@@ -126,9 +140,15 @@ export class GiteaApiService {
       labels: false,
       webhooks: false,
     }
-    const result = await this.postMethod(url, body, { Authorization: this.access_token })
-
-    return result.data.name
+    try {
+      return await this.http_service.post(url, body)
+    } catch (error) {
+      return {
+        status: error.response.status,
+        statusText: error.response.data.message,
+        data: error.response.config.data,
+      }
+    }
   }
 
   private async getOWner() {
