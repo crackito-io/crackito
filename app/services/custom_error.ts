@@ -19,3 +19,13 @@ export class GitUserNotFound extends GitException {
     this.username = username
   }
 }
+
+export class GitRepositoryNotFound extends GitException {
+  repo_name: string
+
+  constructor(repo_name: string, message: string, data: object) {
+    super(404, message, data)
+    this.repo_name = repo_name
+  }
+}
+
