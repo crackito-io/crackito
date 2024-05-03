@@ -45,6 +45,7 @@ export class GiteaApiService {
 
   async addMemberToRepository(repo_name: string, username: string) {
     await this.getOWner()
+    await this.memberExist(username)
     const url = `/repos/${this.owner_name}/${repo_name}/collaborators/${username}`
     const body = {
       permission: 'write',
@@ -146,5 +147,15 @@ export class GiteaApiService {
     const url = `/user`
     const result = await this.http_service.get(url)
     this.owner_name = result.data.username
+  }
+
+  private async memberExist(username: string) {
+    const url = `/users/${username}`
+    try {
+      await this.http_service.get(url)
+      return true
+    } catch (error) {
+      throw new GitUserNotFound(username, error.response.data)
+    }
   }
 }
