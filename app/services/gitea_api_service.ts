@@ -40,19 +40,18 @@ export class GiteaApiService {
 
   async addMemberToRepository(repo_name: string, username: string) {
     await this.getOWner()
-    const url = `${this.api_url}/repos/${this.owner_name}/${repo_name}/collaborators/${username}`
+    const url = `/repos/${this.owner_name}/${repo_name}/collaborators/${username}`
     const body = {
       permission: 'write',
     }
     try {
-      let result = await this.putMethod(url, body, { Authorization: this.access_token })
-      return result
+      return await this.http_service.put(url, body)
     } catch (error) {
-      let error_ = {
+      return {
         status: error.response.status,
         statusText: error.response.data.message,
+        data: error.response.config.data,
       }
-      return error_
     }
   }
 
