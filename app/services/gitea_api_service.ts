@@ -1,5 +1,5 @@
 import env from '#start/env'
-import axios from 'axios'
+import { HttpService } from '#services/http_service'
 
 export type GiteaWebhook = {
   url: string
@@ -79,27 +79,9 @@ export class GiteaApiService {
     await this.protectBranch(repoName, protection)
   }
 
-  private postMethod(url: string, body: object, headers: object) {
-    return axios.post(url, body, {
-      headers: headers,
-    })
-  }
-
-  private getMethod(url: string, headers: object) {
-    return axios.get(url, {
-      headers: headers,
-    })
-  }
-
-  private putMethod(url: string, body: object, headers: object) {
-    return axios.put(url, body, {
-      headers: headers,
-    })
-  }
-
   private async addWebhook(repo_name: string, webhook: GiteaWebhook) {
     await this.getOWner()
-    const url = `${this.api_url}/repos/${this.owner_name}/${repo_name}/hooks`
+    const url = `/repos/${this.owner_name}/${repo_name}/hooks`
     const body = {
       active: true,
       type: 'gitea',
@@ -112,19 +94,17 @@ export class GiteaApiService {
       },
       events: ['push'],
     }
-    const result = await this.postMethod(url, body, { Authorization: this.access_token })
-
-    return result
+    return await this.http_service.post(url, body)
   }
 
   private async protectBranch(repo_name: string, protection: GiteaProtectedBranch) {
-    const url = `${this.api_url}/repos/${this.owner_name}/${repo_name}/branch_protections`
+    const url = `/repos/${this.owner_name}/${repo_name}/branch_protections`
     const body = {
       branch_name: protection.branch,
       enable_push: true,
       protected_file_patterns: protection.files.join(';'),
     }
-    const result = await this.postMethod(url, body, { Authorization: this.access_token })
+    const result = await this.http_service.post(url, body)
     return result
   }
 
@@ -155,8 +135,8 @@ export class GiteaApiService {
     if (this.owner_name) {
       return
     }
-    const url = `${this.api_url}/user`
-    const result = await this.getMethod(url, { Authorization: this.access_token })
+    const url = `/user`
+    const result = await this.http_service.get(url)
     this.owner_name = result.data.username
   }
 }
