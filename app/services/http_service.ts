@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios'
 
 export class HttpService {
-  private default_header: object
+  private readonly default_header: object
   private client: AxiosInstance
 
   constructor(base_url: string, default_header: object = {}) {

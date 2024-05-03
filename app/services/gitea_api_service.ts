@@ -104,8 +104,7 @@ export class GiteaApiService {
       enable_push: true,
       protected_file_patterns: protection.files.join(';'),
     }
-    const result = await this.http_service.post(url, body)
-    return result
+    return await this.http_service.post(url, body)
   }
 
   private async repoFromTemplate(repo_name: string, fork_name: string) {
