@@ -29,3 +29,11 @@ export class GitRepositoryNotFound extends GitException {
   }
 }
 
+export class GitRepositoryAlreadyExists extends GitException {
+  repo_name: string
+
+  constructor(repo_name: string, message: string, data: object) {
+    super(409, message, data)
+    this.repo_name = repo_name
+  }
+}
