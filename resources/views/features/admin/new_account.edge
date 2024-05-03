@@ -1,0 +1,129 @@
+@component('components/layouts/admin')
+    @slot('main')
+    <div class="pc-content">
+        <!-- [ breadcrumb ] start -->
+        <div class="page-header">
+            <div class="page-block">
+                <div class="row align-items-center">
+                    <div class="col-md-12">
+                        <ul class="breadcrumb mb-3">
+                            <li class="breadcrumb-item"><a href="/">{{ t('translate.breadcrumb_home_page') }}</a></li>
+                            <li class="breadcrumb-item"><a href="/admin">{{ t('translate.breadcrumb_home_admin_page') }}</a></li>
+                            <li class="breadcrumb-item"><a href="/admin/accounts">{{ t('translate.breadcrumb_home_admin_accounts_page') }}</a></li>
+                            <li class="breadcrumb-item" aria-current="page">{{ t('translate.breadcrumb_home_admin_accounts_new_page') }}</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="page-header-title">
+                            <h2 class="mb-0">{{ t('translate.new_user') }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- [ breadcrumb ] end -->
+
+
+
+        <!-- [ Main Content ] start -->
+        <div class="row">
+          <!-- [ sample-page ] start -->
+          <div class="col-sm-12">
+            <div style="transition:background-color 0.3s linear" id="card-create-user" class="card">
+              <div class="card-header">
+                  <h5>{{ t('translate.new_user_form_title') }}</h5>
+                  <div id="progress-create-user-outer" class="progress mt-3">
+                    <div id="progress-create-user-inner" class="progress-bar bg-success" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+              </div>
+              <form class="validate-me" id="validate-me" data-validate="" novalidate="true" autocomplete="off">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-lg-6">
+                      <div class="mb-3">
+                        <label class="form-label">{{ t('translate.new_user_form_label_first_name') }}:</label>
+                        <input class="form-control" placeholder="{{ t('translate.new_user_form_placeholder_first_name') }}" type="text" maxlength="50" name="firstname" required="">
+                        <small class="form-text text-muted">{{ t('translate.new_user_form_hint_first_name') }}</small>
+                      </div>
+                    </div>
+                    <div class="col-lg-6">
+                      <div class="mb-3">
+                        <label class="form-label">{{ t('translate.new_user_form_label_last_name') }}:</label>
+                        <input class="form-control" placeholder="{{ t('translate.new_user_form_placeholder_last_name') }}" type="text" maxlength="50" name="lastname" required="">
+                        <small class="form-text text-muted">{{ t('translate.new_user_form_hint_last_name') }}</small>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-lg-6">
+                      <div class="mb-3">
+                        <label class="form-label">{{ t('translate.new_user_form_label_email') }}:</label>
+                        <input type="email" name="email" id="email" class="form-control" placeholder="{{ t('translate.new_user_form_placeholder_email') }}" required="">
+                        <small class="form-text text-muted">{{ t('translate.new_user_form_hint_email') }}</small>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-lg-6">
+                      <div class="mb-3">
+                        <label class="form-label">{{ t('translate.new_user_form_label_password') }}:</label>
+                        <div class="input-group search-form">
+                          <input type="password" name="password" id="password" data-bouncer-target="#password-error" class="form-control" placeholder="{{ t('translate.new_user_form_placeholder_password') }}"  required="">
+                          <span class="input-group-text bg-transparent"><i class="feather icon-lock"></i></span>
+                        </div>
+                        <small class="form-text text-muted">{{ t('translate.new_user_form_hint_password') }}</small>
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="checkbox-password" data-checkbox-pointer="#password">
+                          <label class="form-check-label" for="checkbox-password">Show password</label>
+                        </div>
+                        <div id="password-error"></div>
+                      </div>
+                    </div>
+                    <div class="col-lg-6">
+                      <div class="mb-3">
+                        <label class="form-label">{{ t('translate.new_user_form_label_confirm_password') }}:</label>
+                        <div class="input-group search-form">
+                          <input type="password" name="confirm-password" id="confirm-password" data-bouncer-match="#password" data-bouncer-target="#confirm-password-error" class="form-control" placeholder="{{ t('translate.new_user_form_placeholder_confirm_password') }}" required="">
+                          <span class="input-group-text bg-transparent"><i class="feather icon-lock"></i></span>
+                        </div>
+                        <small class="form-text text-muted">{{ t('translate.new_user_form_hint_confirm_password') }}</small>
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="checkbox-confirm-password" data-checkbox-pointer="#confirm-password">
+                          <label class="form-check-label" for="checkbox-confirm-password">Show password</label>
+                        </div>
+                        <div id="confirm-password-error"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-footer text-end">
+                  <input type="submit" class="btn btn-primary me-2" value="{{ t('translate.new_user_form_submit_button') }}">
+                  <input type="reset" class="btn btn-secondary" value="{{ t('translate.new_user_form_reset_button') }}">
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+    </div>
+    <script>
+      const MESSAGES = {
+          passwordsNotMatch: "{{ t('translate.new_user_form_input_error_message_passwords_not_match') }}",
+          missingValue: {
+            default: "{{ t('translate.new_user_form_input_error_message_required_field') }}",
+          },
+          patternMismatch: {
+            email: "{{ t('translate.new_user_form_input_error_message_bad_email_format') }}",
+            default: "{{ t('translate.new_user_form_input_error_message_bad_password_format') }}"
+          },
+          wrongLength: {
+            over: "{{ t('translate.new_user_form_input_error_message_length_exceeded_first_name') }}",
+          }
+        }
+    </script>
+    <script src="/js/new-account.js"></script>
+    @end
+@end
+
+

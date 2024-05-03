@@ -39,14 +39,17 @@
     "breadcrumb_home_page":"Home",
     "breadcrumb_home_admin_page":"Admin",
     "breadcrumb_home_admin_accounts_page":"Accounts",
+    "breadcrumb_home_admin_accounts_new_page":"New",
 
     "users_list":"List of users",
+    "new_user":"New user",
     "no_account_yet":"There's no account yet.",
 
     "bug_notification_title":"Notification",
     "bug_notification_message": "Notification message has not been received",
 
     "error":"Error!",
+    "success":"Success!",
     "unknown_error":"An unknown error occured while the page was loading",
 
     "avatar_label":"Avatar",
@@ -58,5 +61,42 @@
     "view_users_missing_perm":"You do not have the rights to list users. Please contact your organisation's administrator.",
     "delete_users_missing_perm":"You do not have the rights to delete users. Please contact your organisation's administrator.",
     "create_users_missing_perm":"You do not have the rights to create users. Please contact your organisation's administrator.",
-    "edit_users_missing_perm":"You do not have the rights to edit users. Please contact your organisation's administrator."
+    "edit_users_missing_perm":"You do not have the rights to edit users. Please contact your organisation's administrator.",
+
+    "add_user":"Add a new user",
+
+    "new_user_form_title": "Create a new user",
+    "new_user_form_label_first_name": "First name",
+    "new_user_form_label_last_name": "Last name",
+    "new_user_form_label_email": "Email",
+    "new_user_form_label_password": "Password",
+    "new_user_form_label_confirm_password": "Confirm password",
+    "new_user_form_placeholder_first_name": "Enter first name",
+    "new_user_form_placeholder_last_name": "Enter last name",
+    "new_user_form_placeholder_email": "Enter email adress",
+    "new_user_form_placeholder_password": "Enter password",
+    "new_user_form_placeholder_confirm_password": "Confirm password",
+    "new_user_form_hint_first_name": "at most 50 characters",
+    "new_user_form_hint_last_name": "at most 50 characters",
+    "new_user_form_hint_email": "must match x@y.zz",
+    "new_user_form_hint_password": "at least 8 characters (1 uppercase, 1 lowercase, 1 number, and 1 special character)",
+    "new_user_form_hint_confirm_password": "must match the password field",
+
+
+    "new_user_form_input_error_message_length_exceeded_first_name": "Please shorten this text to no more than 50 characters",
+    "new_user_form_input_error_message_required_field": "Please fill out this field",
+    "new_user_form_input_error_message_passwords_not_match": "Your passwords do not match",
+    "new_user_form_input_error_message_bad_password_format": "Please match the requested password format",
+    "new_user_form_input_error_message_bad_email_format": "Please match the requested email format",
+
+    "new_user_form_show_password_checkbox": "Show password",
+    "new_user_form_submit_button": "Add user",
+    "new_user_form_reset_button": "Reset",
+
+    "not_authorized_error": "You are not allowed to do this action (refresh the page if you think you are)",
+
+    "user_create_field_not_valid":"One or multiple fields are not valid",
+    "user_create_done_success":"The user has been successfully created",
+
+    "mail_already_taken":"The mail is already set to another user"
 }

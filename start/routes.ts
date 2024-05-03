@@ -56,6 +56,14 @@ router
     })
 
     router
+      .get('/accounts/new', [AccountsController, 'newAccount'])
+      .use(middleware.permissions(['create_users']))
+
+    router
+      .post('/accounts', [AccountsController, 'createAccount'])
+      .use(middleware.permissions(['create_users']))
+
+    router
       .get('/accounts', [AccountsController, 'listAccounts'])
       .use(middleware.permissions(['view_users']))
   })
