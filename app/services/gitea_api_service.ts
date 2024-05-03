@@ -1,5 +1,10 @@
 import env from '#start/env'
 import { HttpService } from '#services/http_service'
+import {
+  GitRepositoryAlreadyExists,
+  GitRepositoryNotFound,
+  GitUserNotFound,
+} from '#services/custom_error'
 
 export type GiteaWebhook = {
   url: string
@@ -122,10 +127,14 @@ export class GiteaApiService {
     try {
       return await this.http_service.post(url, body)
     } catch (error) {
-      return {
-        status: error.response.status,
-        statusText: error.response.data.message,
-        data: error.response.config.data,
+      if (error.response.status === 404) {
+        throw new GitRepositoryNotFound(repo_name, error.response.data.message, error.response.data)
+      } else if (error.response.status === 409) {
+        throw new GitRepositoryAlreadyExists(
+          fork_name,
+          error.response.data.message,
+          error.response.data
+        )
       }
     }
   }
