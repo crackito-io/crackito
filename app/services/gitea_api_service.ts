@@ -2,6 +2,7 @@ import env from '#start/env'
 import { HttpService } from '#services/http_service'
 import {
   GitRepositoryAlreadyExists,
+  GitRepositoryNotATemplate,
   GitRepositoryNotFound,
   GitUserNotFound,
 } from '#services/custom_error'
@@ -130,7 +131,14 @@ export class GiteaApiService {
           error.response.data.message,
           error.response.data
         )
+      } else if (error.response.status === 422) {
+        throw new GitRepositoryNotATemplate(
+          repo_name,
+          error.response.data.message,
+          error.response.data
+        )
       }
+      return error
     }
   }
 

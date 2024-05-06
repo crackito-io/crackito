@@ -37,3 +37,12 @@ export class GitRepositoryAlreadyExists extends GitException {
     this.repo_name = repo_name
   }
 }
+
+export class GitRepositoryNotATemplate extends GitException {
+  repo_name: string
+
+  constructor(repo_name: string, message: string, data: object) {
+    super(422, message, data)
+    this.repo_name = repo_name
+  }
+}
