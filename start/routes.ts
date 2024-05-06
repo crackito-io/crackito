@@ -60,12 +60,16 @@ router
       .use(middleware.permissions(['view_users']))
 
     router
-      .delete('/accounts/:id', [AccountsController, 'deleteAccount'])
-      .where('id', {
-        match: /^[0-9]+$/,
-        cast: (value) => Number(value),
+      .group(() => {
+        router
+          .delete('/accounts/:id', [AccountsController, 'deleteAccount'])
+          .where('id', {
+            match: /^[0-9]+$/,
+            cast: (value) => Number(value),
+          })
+          .use(middleware.permissions(['delete_users']))
       })
-      .use(middleware.permissions(['delete_users']))
+      .prefix('/api')
   })
   .prefix('/admin')
   .use([middleware.auth()])

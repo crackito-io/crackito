@@ -72,5 +72,8 @@
 
     "user_not_found_on_delete_error":"You can't delete a non existing user",
     "user_not_in_organization_on_delete_error":"You can't delete a user not in your organization",
-    "user_delete_done_success":"The user is now deleted"
+    "user_your_self":"You can't delete yourself",
+    "user_delete_done_success":"The user is now deleted",
+
+    "server_error":"Internal servor error happened"
 }

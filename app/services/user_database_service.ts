@@ -3,20 +3,19 @@ import { prisma } from '#config/app'
 export default class UserDatabaseService {
   static instances: { [key: number]: UserDatabaseService }
   userIdOrganization: number
+  userId: number
 
-  constructor(userIdOrganization: number) {
+  constructor() {
+    this.userIdOrganization = -1
+    this.userId = -1
+  }
+
+  async setUserIdOrganization(userIdOrganization: number) {
     this.userIdOrganization = userIdOrganization
   }
 
-  static getInstance(idOrganization: number) {
-    if (UserDatabaseService.instances === undefined) {
-      UserDatabaseService.instances = {}
-      UserDatabaseService.instances[idOrganization] = new UserDatabaseService(idOrganization)
-    } else if (!(idOrganization in UserDatabaseService.instances)) {
-      UserDatabaseService.instances[idOrganization] = new UserDatabaseService(idOrganization)
-    }
-
-    return UserDatabaseService.instances[idOrganization]
+  async setUserId(userId: number) {
+    this.userId = userId
   }
 
   async getUserFromId(id_account: number) {
@@ -34,6 +33,16 @@ export default class UserDatabaseService {
   }
 
   async deleteUser(id_account: number): Promise<[number, string, string]> {
+    // check if userId and userOrganization are well set
+    if (this.userId === -1 || this.userIdOrganization === -1) {
+      return [500, 'server_error', 'error']
+    }
+
+    // check self deletion
+    if (id_account === this.userId) {
+      return [403, 'user_your_self', 'error']
+    }
+
     // check user does not exist
     let user = await this.getUserFromId(id_account)
     if (user === null) {
