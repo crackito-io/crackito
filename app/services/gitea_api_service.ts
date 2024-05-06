@@ -5,6 +5,7 @@ import {
   GitRepositoryNotATemplate,
   GitRepositoryNotFound,
   GitUserNotFound,
+  UnknownError,
 } from '#services/custom_error'
 
 export type GiteaWebhook = {
@@ -36,11 +37,11 @@ export class GiteaApiService {
         template: true,
       })
     } catch (error) {
-      return {
-        status: error.response.status,
-        statusText: error.response.data.message,
-        data: error.response.config.data,
-      }
+      throw new UnknownError(
+        error.response.status,
+        error.response.data.message,
+        error.response.data
+      )
     }
   }
 
@@ -54,11 +55,11 @@ export class GiteaApiService {
     try {
       return await this.http_service.put(url, body)
     } catch (error) {
-      return {
-        status: error.response.status,
-        statusText: error.response.data.message,
-        data: error.response.config.data,
-      }
+      throw new UnknownError(
+        error.response.status,
+        error.response.data.message,
+        error.response.data
+      )
     }
   }
 
@@ -95,7 +96,15 @@ export class GiteaApiService {
       },
       events: ['push'],
     }
-    return await this.http_service.post(url, body)
+    try {
+      return await this.http_service.post(url, body)
+    } catch (error) {
+      throw new UnknownError(
+        error.response.status,
+        error.response.data.message,
+        error.response.data
+      )
+    }
   }
 
   private async protectBranch(repo_name: string, protection: GiteaProtectedBranch) {
@@ -105,7 +114,15 @@ export class GiteaApiService {
       enable_push: true,
       protected_file_patterns: protection.files.join(';'),
     }
-    return await this.http_service.post(url, body)
+    try {
+      return await this.http_service.post(url, body)
+    } catch (error) {
+      throw new UnknownError(
+        error.response.status,
+        error.response.data.message,
+        error.response.data
+      )
+    }
   }
 
   private async createRepoFromTemplate(repo_name: string, fork_name: string) {
@@ -138,7 +155,11 @@ export class GiteaApiService {
           error.response.data
         )
       }
-      return error
+      throw new UnknownError(
+        error.response.status,
+        error.response.data.message,
+        error.response.data
+      )
     }
   }
 
@@ -147,8 +168,16 @@ export class GiteaApiService {
       return
     }
     const url = `/user`
-    const result = await this.http_service.get(url)
-    this.owner_name = result.data.username
+    try {
+      const result = await this.http_service.get(url)
+      this.owner_name = result.data.username
+    } catch (error) {
+      throw new UnknownError(
+        error.response.status,
+        error.response.data.message,
+        error.response.data
+      )
+    }
   }
 
   private async memberExist(username: string) {

@@ -1,3 +1,16 @@
+export class UnknownError extends Error {
+  status: number
+  description: string
+  data: object
+
+  constructor(status: number, description: string, data: object) {
+    super(description)
+    this.status = status
+    this.description = description
+    this.data = data
+  }
+}
+
 class GitException extends Error {
   status: number
   description: string
