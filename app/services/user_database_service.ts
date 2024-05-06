@@ -1,7 +1,6 @@
 import { prisma } from '#config/app'
 
 export default class UserDatabaseService {
-  static instances: { [key: number]: UserDatabaseService }
   userIdOrganization: number
   userId: number
 
