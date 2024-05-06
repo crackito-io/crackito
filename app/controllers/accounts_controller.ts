@@ -3,6 +3,7 @@ import UserDatabaseService from '#services/user_database_service'
 
 import { prisma } from '#config/app'
 import { jwtDecode } from 'jwt-decode'
+import { inject } from '@adonisjs/core'
 
 export default class AccountsController {
   userService: UserDatabaseService | undefined
@@ -37,7 +38,8 @@ export default class AccountsController {
     })
   }
 
-  async deleteAccount(ctx: HttpContext) {
+  @inject()
+  async deleteAccount(ctx: HttpContext, userDatabaseService: UserDatabaseService) {
     // get jwtToken
     const jwtToken: any = jwtDecode(ctx.request.cookie('jwt'))
 
@@ -48,9 +50,18 @@ export default class AccountsController {
       return ctx.response.status(401).send({status_code: 401, status_message: ctx.i18n.t('translate.unknown_error'), title: ctx.i18n.t('translate.error')})
     }
 
-    this.userService = UserDatabaseService.getInstance(idOrganization)
+    // get current user id
+    const idAccount = jwtToken.id_account
+
+    if (idAccount === null) {
+      return ctx.response.status(401).send({status_code: 401, status_message: ctx.i18n.t('translate.unknown_error'), title: ctx.i18n.t('translate.error')})
+    }
+
+    userDatabaseService.setUserIdOrganization(idOrganization)
+    userDatabaseService.setUserId(idAccount)
+
     // checker auto-suppression ??
-    const [code, message, title] = await this.userService.deleteUser(ctx.params.id)
+    const [code, message, title] = await userDatabaseService.deleteUser(ctx.params.id)
     return ctx.response.status(code).send({status_code: code, status_message: ctx.i18n.t(`translate.${message}`), title: ctx.i18n.t(`translate.${title}`)})
   }
 }
