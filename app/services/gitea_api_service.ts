@@ -61,7 +61,7 @@ export class GiteaApiService {
     }
   }
 
-  async initTP(
+  async initExercise(
     repo_name: string,
     members: Array<string>,
     webhook: GiteaWebhook,
@@ -69,13 +69,7 @@ export class GiteaApiService {
   ) {
     await this.getOWner()
     let newName = `${repo_name}-${members.join('-')}`
-    let membersRepo = await this.repoFromTemplate(repo_name, newName)
-
-    if (membersRepo.status === 422) {
-      throw new Error(membersRepo.statusText + ' ' + repo_name)
-    } else if (membersRepo.status !== 201) {
-      throw new Error(membersRepo.statusText + ' ' + newName)
-    }
+    let membersRepo = await this.createRepoFromTemplate(repo_name, newName)
     let repoName = membersRepo.data.name
 
     for (let member of members) {
@@ -113,7 +107,7 @@ export class GiteaApiService {
     return await this.http_service.post(url, body)
   }
 
-  private async repoFromTemplate(repo_name: string, fork_name: string) {
+  private async createRepoFromTemplate(repo_name: string, fork_name: string) {
     const url = `/repos/${this.owner_name}/${repo_name}/generate`
     const body = {
       name: fork_name,
