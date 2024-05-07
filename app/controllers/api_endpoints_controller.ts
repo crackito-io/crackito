@@ -1,4 +1,4 @@
-import GiteaApiService from '#services/gitea_api_service'
+import { GiteaApiService, GiteaProtectedBranch, GiteaWebhook } from '#services/gitea_api_service'
 import WoodpeckerApiService from '#services/woodpecker_api_service'
 import { inject } from '@adonisjs/core'
 import { HttpContext } from '@adonisjs/core/http'
@@ -64,8 +64,35 @@ export default class ApiEndpointsController {
     if (!body.name || !body.members) {
       response.badRequest({ message: 'Repo name and members are required' })
     }
+
+    if (!body.webhook) {
+      response.badRequest({ message: 'Webhook is required' })
+    }
+
+    if (!body.webhook.url || !body.webhook.secret) {
+      response.badRequest({ message: 'Webhook url and secret are required' })
+    }
+
+    if (!body.protected) {
+      response.badRequest({ message: 'Protected branches are required' })
+    }
+
+    if (!body.protected.branch || !body.protected.files) {
+      response.badRequest({ message: 'Protected branches and files are required' })
+    }
+
+    let webhook: GiteaWebhook = {
+      url: body.webhook.url,
+      secret: body.webhook.secret,
+    }
+
+    let protection: GiteaProtectedBranch = {
+      branch: body.protected.branch,
+      files: body.protected.files,
+    }
+
     for (let member of body.members) {
-      await giteaApiService.initTP(body.name, member)
+      await giteaApiService.initTP(body.name, member, webhook,protection)
     }
 
     response.send({ message: 'Fork created successfully' })
