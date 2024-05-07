@@ -1,32 +1,25 @@
 import env from '#start/env'
-import axios from 'axios'
+import { HttpService } from '#services/http_service'
+import { ExternalAPIError } from '#services/custom_error'
 
 export default class WoodpeckerApiService {
-  triggerPipeline(repo_id: number, default_branch: string) {
-    return new Promise<void>(async (resolve, reject) => {
-      const access_token = `Bearer ${env.get('WOODPECKER_TOKEN')}`
-      const url = `${env.get('WOODPECKER_URL')}/api/repos/${repo_id}/pipelines`
-      try {
-        await this.postMethod(
-          url,
-          {
-            branch: default_branch,
-            variables: {},
-          },
-          {
-            Authorization: access_token,
-          }
-        )
-        resolve()
-      } catch (error) {
-        reject(error)
-      }
-    })
-  }
+  private http_service: HttpService = new HttpService(`${env.get('WOODPECKER_URL')}/api`, {
+    Authorization: `Bearer ${env.get('WOODPECKER_TOKEN')}`,
+  })
 
-  private postMethod(url: string, body: object, headers: object) {
-    return axios.post(url, body, {
-      headers: headers,
-    })
+  async triggerPipeline(repo_id: number, default_branch: string) {
+    const url = `/repos/${repo_id}/pipelines`
+    try {
+      return await this.http_service.post(url, {
+        branch: default_branch,
+      })
+    } catch (error) {
+      throw new ExternalAPIError(
+        error.response.status,
+        error.response.data,
+        error,
+        error.response.data.message
+      )
+    }
   }
 }
