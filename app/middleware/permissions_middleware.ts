@@ -34,16 +34,29 @@ export default class PermissionsMiddleware {
     if (!authorized) {
       // if not authorized, search unique or multiple missing permission(s)
       let missingPermissionsList = this.getMissingPermissions(jwtTokenPermission, requiredPermissionsIntegerValue, associativePermissions)
-      ctx.session.flash('notifications',
-        missingPermissionsList.map((_: string) => ({
-          type: 'danger',
-          title: ctx.i18n.t('translate.missing_perm'),
-          message: ctx.i18n.t(`translate.${_.toLowerCase()}_missing_perm`),
-        }))
-      )
-      return ctx.response.redirect().back()
+      if (ctx.request.ajax()) {
+        ctx.logger.info({ tag: '#1CBC31' }, 'JWT Token permissions are not valid for this page, sending 401 to the current page')
+        return ctx.response.status(403).send(
+          missingPermissionsList.map((_: string) => ({
+            status_code: 403,
+            status_message: ctx.i18n.t(`translate.${_.toLowerCase()}_missing_perm`),
+            title: ctx.i18n.t('translate.missing_perm'),
+          }))
+        )
+      } else {
+        ctx.logger.info({ tag: '#7FFF18' }, 'JWT Token permissions are not valid for this page, redirection to the last page')
+        ctx.session.flash('notifications',
+          missingPermissionsList.map((_: string) => ({
+            type: 'danger',
+            title: ctx.i18n.t('translate.missing_perm'),
+            message: ctx.i18n.t(`translate.${_.toLowerCase()}_missing_perm`),
+          }))
+        )
+        return ctx.response.redirect().back()
+      }
     }
 
+    ctx.logger.info({ tag: '#0BF1A2' }, 'JWT Token permissions are valid for this page, send to the next')
     const output = await next()
     return output
   }

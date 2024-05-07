@@ -58,6 +58,18 @@ router
     router
       .get('/accounts', [AccountsController, 'listAccounts'])
       .use(middleware.permissions(['view_users']))
+
+    router
+      .group(() => {
+        router
+          .delete('/accounts/:id', [AccountsController, 'deleteAccount'])
+          .where('id', {
+            match: /^[0-9]+$/,
+            cast: (value) => Number(value),
+          })
+          .use(middleware.permissions(['delete_users']))
+      })
+      .prefix('/api')
   })
   .prefix('/admin')
   .use([middleware.auth()])
