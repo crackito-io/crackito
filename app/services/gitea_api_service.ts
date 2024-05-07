@@ -4,8 +4,8 @@ import {
   GitRepositoryAlreadyExists,
   GitRepositoryNotATemplate,
   GitRepositoryNotFound,
-  GitUserNotFound,
-  UnknownError,
+  UserNotFound,
+  ExternalAPIError,
 } from '#services/custom_error'
 
 export type GiteaWebhook = {
@@ -37,10 +37,11 @@ export class GiteaApiService {
         template: true,
       })
     } catch (error) {
-      throw new UnknownError(
+      throw new ExternalAPIError(
         error.response.status,
-        error.response.data.message,
-        error.response.data
+        error.response.data,
+        error,
+        error.response.data.message
       )
     }
   }
@@ -55,10 +56,11 @@ export class GiteaApiService {
     try {
       return await this.http_service.put(url, body)
     } catch (error) {
-      throw new UnknownError(
+      throw new ExternalAPIError(
         error.response.status,
-        error.response.data.message,
-        error.response.data
+        error.response.data,
+        error,
+        error.response.data.message
       )
     }
   }
@@ -79,6 +81,8 @@ export class GiteaApiService {
     }
     await this.addWebhook(repoName, webhook)
     await this.protectBranch(repoName, protection)
+
+    return membersRepo
   }
 
   private async addWebhook(repo_name: string, webhook: GiteaWebhook) {
@@ -99,10 +103,11 @@ export class GiteaApiService {
     try {
       return await this.http_service.post(url, body)
     } catch (error) {
-      throw new UnknownError(
+      throw new ExternalAPIError(
         error.response.status,
-        error.response.data.message,
-        error.response.data
+        error.response.data,
+        error,
+        error.response.data.message
       )
     }
   }
@@ -117,10 +122,11 @@ export class GiteaApiService {
     try {
       return await this.http_service.post(url, body)
     } catch (error) {
-      throw new UnknownError(
+      throw new ExternalAPIError(
         error.response.status,
-        error.response.data.message,
-        error.response.data
+        error.response.data,
+        error,
+        error.response.data.message
       )
     }
   }
@@ -140,26 +146,23 @@ export class GiteaApiService {
     try {
       return await this.http_service.post(url, body)
     } catch (error) {
-      if (error.response.status === 404) {
-        throw new GitRepositoryNotFound(repo_name, error.response.data.message, error.response.data)
-      } else if (error.response.status === 409) {
-        throw new GitRepositoryAlreadyExists(
-          fork_name,
-          error.response.data.message,
-          error.response.data
-        )
-      } else if (error.response.status === 422) {
-        throw new GitRepositoryNotATemplate(
-          repo_name,
-          error.response.data.message,
-          error.response.data
-        )
-      }
-      throw new UnknownError(
+      let externalError: ExternalAPIError = new ExternalAPIError(
         error.response.status,
-        error.response.data.message,
-        error.response.data
+        error.response.data,
+        error,
+        error.response.data.message
       )
+      if (error.response.status === 404) {
+        externalError.addErrorDetails(new GitRepositoryNotFound(repo_name))
+        throw externalError
+      } else if (error.response.status === 409) {
+        externalError.addErrorDetails(new GitRepositoryAlreadyExists(fork_name))
+        throw externalError
+      } else if (error.response.status === 422) {
+        externalError.addErrorDetails(new GitRepositoryNotATemplate(repo_name))
+        throw externalError
+      }
+      throw externalError
     }
   }
 
@@ -172,10 +175,11 @@ export class GiteaApiService {
       const result = await this.http_service.get(url)
       this.owner_name = result.data.username
     } catch (error) {
-      throw new UnknownError(
+      throw new ExternalAPIError(
         error.response.status,
-        error.response.data.message,
-        error.response.data
+        error.response.data,
+        error,
+        error.response.data.message
       )
     }
   }
@@ -186,7 +190,14 @@ export class GiteaApiService {
       await this.http_service.get(url)
       return true
     } catch (error) {
-      throw new GitUserNotFound(username, error.response.data)
+      let externalError: ExternalAPIError = new ExternalAPIError(
+        error.response.status,
+        error.response.data,
+        error,
+        error.response.data.message
+      )
+      externalError.addErrorDetails(new UserNotFound(username))
+      throw externalError
     }
   }
 }

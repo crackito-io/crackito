@@ -1,61 +1,68 @@
-export class UnknownError extends Error {
-  status: number
-  description: string
-  data: object
+import { I18n } from '@adonisjs/i18n'
 
-  constructor(status: number, description: string, data: object) {
-    super(description)
-    this.status = status
-    this.description = description
-    this.data = data
+interface IsPrintableErrorMessage {
+  getPrintableErrorMessage(i18n: I18n): string
+}
+
+class GitRepositoryError implements IsPrintableErrorMessage {
+  constructor(
+    private repo: string,
+    private error_id: string
+  ) {}
+
+  getPrintableErrorMessage(i18n: I18n): string {
+    return i18n.t(this.error_id, { repo: this.repo })
   }
 }
 
-class GitException extends Error {
-  status: number
-  description: string
-  data: object
+export class ExternalAPIError extends Error implements IsPrintableErrorMessage {
+  error_details: IsPrintableErrorMessage | undefined
 
-  constructor(status: number, description: string, data: object) {
-    super(description)
-    this.status = status
-    this.description = description
-    this.data = data
+  constructor(
+    public status: number,
+    public http_request: object,
+    public raw_error: Error,
+    public message: string
+  ) {
+    super(message)
+    this.raw_error = raw_error
+  }
+
+  addErrorDetails(error_details: IsPrintableErrorMessage) {
+    this.error_details = error_details
+  }
+
+  getPrintableErrorMessage(i18n: I18n): string {
+    if (this.error_details !== undefined) {
+      return this.error_details.getPrintableErrorMessage(i18n)
+    } else {
+      return this.message
+    }
   }
 }
 
-export class GitUserNotFound extends GitException {
-  username: string
-
-  constructor(username: string, data: object) {
-    super(404, `User ${username} not found`, data)
-    this.username = username
+export class GitRepositoryNotFound extends GitRepositoryError {
+  constructor(repo: string) {
+    super(repo, 'repo_not_found')
   }
 }
 
-export class GitRepositoryNotFound extends GitException {
-  repo_name: string
-
-  constructor(repo_name: string, message: string, data: object) {
-    super(404, message, data)
-    this.repo_name = repo_name
+export class GitRepositoryAlreadyExists extends GitRepositoryError {
+  constructor(repo: string) {
+    super(repo, 'repo_already_exists')
   }
 }
 
-export class GitRepositoryAlreadyExists extends GitException {
-  repo_name: string
-
-  constructor(repo_name: string, message: string, data: object) {
-    super(409, message, data)
-    this.repo_name = repo_name
+export class GitRepositoryNotATemplate extends GitRepositoryError {
+  constructor(repo: string) {
+    super(repo, 'repo_not_template')
   }
 }
 
-export class GitRepositoryNotATemplate extends GitException {
-  repo_name: string
+export class UserNotFound implements IsPrintableErrorMessage {
+  constructor(private username: string) {}
 
-  constructor(repo_name: string, message: string, data: object) {
-    super(422, message, data)
-    this.repo_name = repo_name
+  getPrintableErrorMessage(i18n: I18n): string {
+    return i18n.t('user_not_found', { username: this.username })
   }
 }
