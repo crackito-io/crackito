@@ -22,4 +22,18 @@ export default class WoodpeckerApiService {
       )
     }
   }
+
+  async activateRepository(repo_id: number) {
+    const url = `/repos?forge_remote_id=${repo_id}`
+    try {
+      return await this.http_service.post(url, {})
+    } catch (error) {
+      throw new ExternalAPIError(
+        error.response.status,
+        error.response.data,
+        error,
+        error.response.data.message
+      )
+    }
+  }
 }
