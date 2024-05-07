@@ -29,4 +29,11 @@ export class HttpService {
       headers: headers,
     })
   }
+
+  delete(url: string, headers: object = {}) {
+    headers = { ...this.default_header, ...headers }
+    return this.client.delete(url, {
+      headers: headers,
+    })
+  }
 }

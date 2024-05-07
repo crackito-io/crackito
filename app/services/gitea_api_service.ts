@@ -83,6 +83,30 @@ export class GiteaApiService {
     return membersRepo
   }
 
+  async removeCIWebhook(repo_name: string) {
+    await this.getOWner()
+    const url = `/repos/${this.owner_name}/${repo_name}/hooks`
+    try {
+      const result = await this.http_service.get(url)
+      for (let hook of result.data) {
+        if (hook.config.url.includes(env.get('WOODPECKER_URL'))) {
+          await this.deleteWebhook(repo_name, hook.id)
+        }
+      }
+    } catch (error) {
+      if (error.response.status === 404) {
+        let externalError: ExternalAPIError = new ExternalAPIError(
+          error.response.status,
+          error.response.data,
+          error,
+          error.response.data.message
+        )
+        externalError.addErrorDetails(new GitRepositoryNotFound(repo_name))
+        throw externalError
+      }
+    }
+  }
+
   private async addWebhook(repo_name: string, webhook: GiteaWebhook) {
     await this.getOWner()
     const url = `/repos/${this.owner_name}/${repo_name}/hooks`
@@ -100,6 +124,21 @@ export class GiteaApiService {
     }
     try {
       return await this.http_service.post(url, body)
+    } catch (error) {
+      throw new ExternalAPIError(
+        error.response.status,
+        error.response.data,
+        error,
+        error.response.data.message
+      )
+    }
+  }
+
+  private async deleteWebhook(repo_name: string, webhook_id: number) {
+    await this.getOWner()
+    const url = `/repos/${this.owner_name}/${repo_name}/hooks/${webhook_id}`
+    try {
+      return await this.http_service.delete(url)
     } catch (error) {
       throw new ExternalAPIError(
         error.response.status,
