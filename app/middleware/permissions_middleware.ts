@@ -35,6 +35,7 @@ export default class PermissionsMiddleware {
       // if not authorized, search unique or multiple missing permission(s)
       let missingPermissionsList = this.getMissingPermissions(jwtTokenPermission, requiredPermissionsIntegerValue, associativePermissions)
       if (ctx.request.ajax()) {
+        ctx.logger.info({ tag: '#1CBC31' }, 'JWT Token permissions are not valid for this page, sending 401 to the current page')
         return ctx.response.status(403).send(
           missingPermissionsList.map((_: string) => ({
             status_code: 403,
@@ -43,6 +44,7 @@ export default class PermissionsMiddleware {
           }))
         )
       } else {
+        ctx.logger.info({ tag: '#7FFF18' }, 'JWT Token permissions are not valid for this page, redirection to the last page')
         ctx.session.flash('notifications',
           missingPermissionsList.map((_: string) => ({
             type: 'danger',
@@ -54,6 +56,7 @@ export default class PermissionsMiddleware {
       }
     }
 
+    ctx.logger.info({ tag: '#0BF1A2' }, 'JWT Token permissions are valid for this page, send to the next')
     const output = await next()
     return output
   }

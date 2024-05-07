@@ -1,22 +1,6 @@
 import { prisma } from '#config/app'
 
 export default class UserDatabaseService {
-  userIdOrganization: number
-  userId: number
-
-  constructor() {
-    this.userIdOrganization = -1
-    this.userId = -1
-  }
-
-  async setUserIdOrganization(userIdOrganization: number) {
-    this.userIdOrganization = userIdOrganization
-  }
-
-  async setUserId(userId: number) {
-    this.userId = userId
-  }
-
   async getUserFromId(id_account: number) {
     const user = await prisma.account.findFirst({
       where: {
@@ -31,14 +15,9 @@ export default class UserDatabaseService {
     return user?.id_organization ?? null
   }
 
-  async deleteUser(id_account: number): Promise<[number, string, string]> {
-    // check if userId and userOrganization are well set
-    if (this.userId === -1 || this.userIdOrganization === -1) {
-      return [500, 'server_error', 'error']
-    }
-
+  async deleteUser(currentUserId: number, currentUserOrganizationId: number, id_account: number): Promise<[number, string, string]> {
     // check self deletion
-    if (id_account === this.userId) {
+    if (id_account === currentUserId) {
       return [403, 'user_your_self', 'error']
     }
 
@@ -50,7 +29,7 @@ export default class UserDatabaseService {
 
     // check user not in current user organization
     let userOrganization = await this.getUserOrganization(user)
-    if (userOrganization !== this.userIdOrganization) {
+    if (userOrganization !== currentUserOrganizationId) {
       return [403, 'user_not_in_organization_on_delete_error', 'error']
     }
 
