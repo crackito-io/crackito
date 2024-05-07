@@ -20,10 +20,8 @@ export type GiteaProtectedBranch = {
 
 export class GiteaApiService {
   private owner_name: string = ''
-  private access_token: string = `Bearer ${env.get('GITEA_TOKEN')}`
-  private api_url: string = `${env.get('GITEA_URL')}/api/v1`
-  private http_service: HttpService = new HttpService(this.api_url, {
-    Authorization: this.access_token,
+  private http_service: HttpService = new HttpService(`${env.get('GITEA_URL')}/api/v1`, {
+    Authorization: `Bearer ${env.get('GITEA_TOKEN')}`,
   })
 
   async createRepository(repo_name: string) {
