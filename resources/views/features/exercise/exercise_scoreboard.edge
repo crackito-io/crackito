@@ -5,14 +5,14 @@
   <div class="modal-dialog modal-fullscreen">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title h4" id="complete-error-label">Complete error</h5>
+        <h5 class="modal-title h4" id="complete-error-label">{{ t('translate.complete_error_popup_text') }}</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <pre id="complete-error-content"></pre>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t('translate.complete_error_popup_close_button') }}</button>
       </div>
     </div>
   </div>
@@ -22,7 +22,7 @@
     <div class="col-xl-6 col-md-12">
         <div class="card new-cust-card">
             <div class="card-header">
-                <h5>Scoreboard</h5>
+                <h5>{{ t('translate.title_scoreboard') }}</h5>
             </div>
             <div class="customer-scroll" style="position: relative; padding-bottom: 20px; height: 600px;">
                 <div class="card-body p-b-0">
@@ -33,10 +33,10 @@
                         alt="user image" class="img-radius align-top m-r-15" />
                     @endeach
                     <div class="d-inline-block">
-                        <h5><span class="badge bg-dark">{{ index + 1 }}th</span></h5>
+                        <h5><span class="badge bg-dark">{{ index + 1 }}{{ index + 1 == 1 ? t('translate.first') : (index + 1 == 2 ? t('translate.second') : (index + 1 == 3 ? t('translate.third') : t('translate.other_rank'))) }}</span></h5>
                         <h5 class="m-b-0">{{ team.teamMembers }}</h5>
 
-                        <span class="status deactive w-25">{{ team.gainedPoint }}/{{ team.maxPoint }} points
+                        <span class="status deactive w-25">{{ team.gainedPoint }}/{{ team.maxPoint }} {{ t('translate.points_text') }}
                           <div class="progress {{ team.percentFinished < 25 ? 'bg-danger-subtle' : (team.percentFinished < 50 ? 'bg-warning-subtle' : (team.percentFinished < 75 ? 'bg-info-subtle' : 'bg-success-subtle')) }}">
                             <div class="progress-bar {{ team.percentFinished < 25 ? 'bg-danger' : (team.percentFinished < 50 ? 'bg-warning' : (team.percentFinished < 75 ? 'bg-info' : 'bg-success')) }} progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="{{ team.percentFinished }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ team.percentFinished }}%"></div>
                           </div>
@@ -52,7 +52,7 @@
     <div class="col-xl-6 col-md-12">
         <div class="card task-card">
             <div class="card-header d-flex align-items-center justify-content-between">
-                <h5>Your progress</h5>
+                <h5>{{ t('translate.title_progress') }}</h5>
             </div>
             <div class="card-body">
                 <ul class="list-unstyled task-list">
@@ -63,7 +63,7 @@
                     @else
                     <i class="task-icon bg-danger"></i>
                     @endif
-                    <h5 class="text-muted">{{ progress.step_title }} ({{ progress.step_test_number }} tests à passer)</h5>
+                    <h5 class="text-muted">{{ progress.step_title }} ({{ progress.step_test_number }} {{ t('translate.test_to_pass_text') }})</h5>
                     <p>{{ progress.step_description }}</p>
                     <ul class="list-unstyled rounded-10">
                       <div class="list-group">
@@ -71,7 +71,7 @@
                         <li class="list-group-item list-group-item-{{ test.passed ? 'success' : 'danger' }} mb-0 p-2 d-flex justify-content-between align-items-center">
                           <span class="fw-bold">{{ test.name }}</span> {{ test.message }}
                           @unless(test.passed)
-                          <button onclick="completeErrorPopUp('{{ test.detailed_message }}')" class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#complete-error">Voir l'erreur complète</button>
+                          <button onclick="completeErrorPopUp('{{ test.detailed_message }}')" class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#complete-error">{{ t('translate.complete_error_button') }}</button>
                           @endunless
                         </li>
                         @endeach
@@ -91,7 +91,4 @@ function completeErrorPopUp(content) {
 }
 </script>
 @end
-
-
-
 @end

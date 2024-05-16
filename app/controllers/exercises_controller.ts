@@ -35,10 +35,8 @@ export default class ExercisesController {
       exerciseList.push({
         title: el.team.project.name,
         description: el.team.project.description,
-        status: el.team.project.status_open ? 'Open' : 'Closed',
-        status_style: el.team.project.status_open ? 'bg-light-primary' : 'bg-light-secondary',
-        status_team: el.team.status_project_finished ? 'Finished' : 'In progress',
-        status_team_style: el.team.status_project_finished ? 'bg-light-success' : 'bg-light-warning',
+        status_open: el.team.project.status_open,
+        status_team_finished: el.team.status_project_finished,
         repo_name: el.team.project.repo_name,
       })
     })
@@ -48,14 +46,14 @@ export default class ExercisesController {
     })
   }
 
-  getPrintableTime(timestamp: number) {
+  getPrintableTime(timestamp: number, ctx: HttpContext) {
     let seconds = timestamp / 1000
     if (seconds < 60) {
-      return Math.trunc(seconds) + ' second(s)'
+      return Math.trunc(seconds) + ' ' + ctx.i18n.t('translate.seconds')
     } else if (seconds < 3600) {
-      return Math.trunc(seconds / 60) + ' minute(s)'
+      return Math.trunc(seconds / 60) + ' ' + ctx.i18n.t('translate.minutes')
     } else {
-      return Math.trunc(seconds / 3600) + ' hour(s)'
+      return Math.trunc(seconds / 3600) + ' ' + ctx.i18n.t('translate.hours')
     }
   }
 
@@ -135,7 +133,7 @@ export default class ExercisesController {
     return rLeaderboard
   }
 
-  async headerBuilder(currentTeam: team, leaderboard: object[]) {
+  async headerBuilder(currentTeam: team, leaderboard: object[], ctx: HttpContext) {
     console.log(leaderboard)
     let rankCurrentTeam = leaderboard.findIndex((e) => e.id_team === currentTeam.id_team) + 1
     let stepNotFinished = new Set()
@@ -149,9 +147,9 @@ export default class ExercisesController {
     console.log(stepNotFinished, currentTeam.project.step.length, totalStepFinished)
     return {
       title: currentTeam.project.name,
-      rank: rankCurrentTeam + 'th',
+      rank: rankCurrentTeam,
       steps: totalStepFinished + '/' + currentTeam.project.step.length,
-      last_commit: this.getPrintableTime(Date.now() - currentTeam.last_commit.getTime()),
+      last_commit: this.getPrintableTime(Date.now() - currentTeam.last_commit.getTime(), ctx),
       status: currentTeam.project.status_open,
       status_team: currentTeam.status_project_finished,
       repo_name: currentTeam.project.repo_name,
@@ -242,7 +240,7 @@ export default class ExercisesController {
     let leaderboard = await this.getLeaderBoard(accountTeam.team)
 
     ctx.view.share({
-      ...(await this.headerBuilder(accountTeam.team, leaderboard)),
+      ...(await this.headerBuilder(accountTeam.team, leaderboard, ctx)),
     })
 
     let userProgress = []

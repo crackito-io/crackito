@@ -75,5 +75,46 @@
     "user_your_self":"You can't delete yourself",
     "user_delete_done_success":"The user is now deleted",
 
-    "server_error":"Internal servor error happened"
+    "server_error":"Internal servor error happened",
+
+    "join_exercice":"Join",
+    "status_closed": "Closed",
+    "status_open": "Open",
+    "status_finished": "Finished",
+    "status_inprogress": "In progress",
+
+    "nav_exercise_exercise":"Exercise",
+    "nav_exercise_scoreboard":"Scoreboard",
+    "nav_exercise_helper":"Helper",
+    "nav_exercise_logs":"Logs",
+
+    "exercise_breadcrum": "Exercices",
+
+    "rank_label": "in your group",
+    "lastcommit_label": "last commit",
+    "steps_label": "steps",
+    "status_label": "exercise status",
+
+    "seconds":"second(s)",
+    "minutes":"minute(s)",
+    "hours":"hour(s)",
+
+    "first":"st",
+    "second":"nd",
+    "third":"rd",
+    "other_rank":"th",
+
+    "rank_text":"rank",
+    "last_commit_ago_text":"ago",
+    "finished_steps_text":"finished",
+
+    "complete_error_popup_close_button":"Close",
+    "complete_error_popup_text":"Complete error",
+    "complete_error_button":"Watch complete error",
+
+    "title_progress":"Your progress",
+    "title_scoreboard":"Scoreboard",
+
+    "test_to_pass_text":"tests to pass",
+    "points_text":"points"
 }

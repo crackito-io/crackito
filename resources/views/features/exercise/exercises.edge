@@ -9,15 +9,15 @@
                         <div class="card-body">
                             <h5 class="card-title">
                               {{exercise.title}}
-                              <span class="badge {{exercise.status_style}}">{{exercise.status}}</span>
-                              <span class="badge {{exercise.status_team_style}}">{{exercise.status_team}}</span>
+                              <span class="badge {{exercise.status_open ? 'bg-light-primary' : 'bg-light-secondary'}}">{{exercise.status_open ? t('translate.status_open') : t('translate.status_closed') }}</span>
+                              <span class="badge {{exercise.status_team_finished ? 'bg-light-success' : 'bg-light-warning'}}">{{exercise.status_team_finished ? t('translate.status_finished') : t('translate.status_inprogress') }}</span>
                             </h5>
                             <p class="card-text">{{exercise.description}}</p>
                             <a href="/exercises/{{exercise.repo_name}}" class="btn btn-primary">
                                 <svg class="pc-icon me-2">
                                     <use xlink:href="#custom-logout-1-outline"></use>
                                 </svg>
-                                <span>Join</span>
+                                <span>{{ t('translate.join_exercice') }}</span>
                             </a>
                         </div>
                     </div>

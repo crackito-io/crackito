@@ -16,7 +16,7 @@
                     <div class="row align-items-center">
                         <div class="col-md-12">
                             <ul class="breadcrumb mb-3">
-                                <li class="breadcrumb-item"><a href="/exercises">Exercises</a></li>
+                                <li class="breadcrumb-item"><a href="/exercises">{{t('translate.exercise_breadcrum')}}</a></li>
                                 <li class="breadcrumb-item" aria-current="page">{{ title }}</li>
                             </ul>
                         </div>
@@ -36,8 +36,8 @@
                         <div class="card-body">
                             <div class="row align-items-center">
                                 <div class="col-8">
-                                    <h3 class="mb-1">{{ rank }} rank</h3>
-                                    <p class="mb-0">in your group</p>
+                                    <h3 class="mb-1">{{ rank }}{{ rank == 1 ? t('translate.first') : (rank == 2 ? t('translate.second') : (rank == 3) ? t('translate.third') : t('translate.other_rank') ) }} {{ t('translate.rank_text') }}</h3>
+                                    <p class="mb-0">{{ t('translate.rank_label') }}</p>
                                 </div>
                                 <div class="col-4 text-end">
                                     <i class="ti ti-trophy f-36"></i>
@@ -51,8 +51,8 @@
                       <div class="card-body">
                           <div class="row align-items-center">
                               <div class="col-8">
-                                  <h3 class="mb-1">{{ last_commit }} ago</h3>
-                                  <p class="text-muted mb-0">last commit</p>
+                                  <h3 class="mb-1">{{ last_commit }} {{ t('translate.last_commit_ago_text') }}</h3>
+                                  <p class="text-muted mb-0">{{ t('translate.lastcommit_label') }}</p>
                               </div>
                               <div class="col-4 text-end">
                                   <i class="ti ti-brand-github f-36"></i>
@@ -66,8 +66,8 @@
                         <div class="card-body">
                             <div class="row align-items-center">
                                 <div class="col-8">
-                                    <h3 class="mb-1 {{ status_team ? 'text-success' : 'text-warning' }}">{{ steps }} finished</h3>
-                                    <p class="text-muted mb-0 text-success">steps</p>
+                                    <h3 class="mb-1 {{ status_team ? 'text-success' : 'text-warning' }}">{{ steps }} {{ t('translate.finished_steps_text') }}</h3>
+                                    <p class="text-muted mb-0 text-success">{{ t('translate.steps_label') }}</p>
                                 </div>
                                 <div class="col-4 text-end">
                                     <i class="ti ti-flag-3 f-36"></i>
@@ -81,8 +81,8 @@
                         <div class="card-body">
                             <div class="row align-items-center">
                                 <div class="col-8">
-                                    <h3 class="mb-1 {{ status ? 'text-primary' : 'text-secondary' }}">{{ status ? 'Open' : 'Closed' }}</h3>
-                                    <p class="text-muted mb-0">exercise status</p>
+                                    <h3 class="mb-1 {{ status ? 'text-primary' : 'text-secondary' }}">{{ status ? t('translate.status_open') : t('translate.status_closed') }}</h3>
+                                    <p class="text-muted mb-0">{{ t('translate.status_label') }}</p>
                                 </div>
                                 <div class="col-4 text-end">
                                     <i class="ti ti-lock-open {{ status ? 'text-primary' : 'text-secondary' }} f-36"></i>
@@ -101,25 +101,25 @@
                                 <li class="nav-item">
                                     <a class="nav-link activable" rule="/details" id="profile-tab-1" href="/exercises/{{repo_name}}/details"
                                         aria-selected="true">
-                                        <i class="ti ti-target me-2"></i>Exercise
+                                        <i class="ti ti-target me-2"></i>{{ t('translate.nav_exercise_exercise') }}
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link activable" rule="/scoreboard" id="profile-tab-2" href="/exercises/{{repo_name}}/scoreboard"
                                         aria-selected="true">
-                                        <i class="ti ti-trophy me-2"></i>Scoreboard
+                                        <i class="ti ti-trophy me-2"></i>{{ t('translate.nav_exercise_scoreboard') }}
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link activable" rule="/helper" id="profile-tab-2" href="/exercises/{{repo_name}}/helper"
                                         aria-selected="true">
-                                        <i class="ti ti-ghost me-2"></i>Helper
+                                        <i class="ti ti-ghost me-2"></i>{{ t('translate.nav_exercise_helper') }}
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link activable" rule="/logs" id="profile-tab-3" href="/exercises/{{repo_name}}/logs"
                                         aria-selected="true">
-                                        <i class="ti ti-file-text me-2"></i>Logs
+                                        <i class="ti ti-file-text me-2"></i>{{ t('translate.nav_exercise_logs') }}
                                     </a>
                                 </li>
                             </ul>
