@@ -1,0 +1,17 @@
+.env
+.env.example
+.env.gitea
+.env.gitea.example
+.env.gitea-db
+.env.gitea-db.example
+.env.woodpecker-agent
+.env.woodpecker-agent.example
+.env.woodpecker
+.env.woodpecker.example
+
+.git
+node_modules
+build
+docker-compose.yml
+.idea
+.github

@@ -1,0 +1,92 @@
+services:
+  db-crackito:
+    image: mysql
+    environment:
+      MYSQL_USER: crackito
+      MYSQL_PASSWORD: crackito
+      MYSQL_ALLOW_EMPTY_PASSWORD: no
+      MYSQL_RANDOM_ROOT_PASSWORD: yes
+    ports:
+      - '3306:3306'
+    volumes:
+      - ./database/init/:/docker-entrypoint-initdb.d
+
+    healthcheck:
+      test: [ 'CMD', 'mysqladmin', 'ping', '-h', 'localhost' ]
+      timeout: 10s
+      retries: 10
+
+  crackito:
+    image: crackito
+    container_name: crackito
+    ports:
+      - '8080:8080'
+    depends_on:
+      db-crackito:
+        condition: service_healthy
+    env_file:
+      - .env
+
+  gitea:
+    image: gitea/gitea:1.21.11
+    container_name: gitea
+    env_file:
+      - .env.gitea
+    restart: always
+    ports:
+      - "3000:3000"
+    networks:
+      - gitea
+    volumes:
+      - ./data/gitea:/data
+    depends_on:
+      - db-gitea
+
+  db-gitea:
+    container_name: db-gitea
+    image: postgres:14
+    restart: always
+    env_file:
+      - .env.gitea-db
+    networks:
+      - gitea
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+
+  woodpecker-server:
+    container_name: woodpecker_server
+    image: woodpeckerci/woodpecker-server:latest
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data/woodpecker-server-data:/var/lib/woodpecker/
+    env_file:
+      - .env.woodpecker
+      - .env.woodpecker-agent
+    networks:
+      - woodpecker
+
+  woodpecker-agent:
+    container_name: woodpecker_agent
+    image: woodpeckerci/woodpecker-agent:latest
+    command: agent
+    restart: always
+    depends_on:
+      - woodpecker-server
+    volumes:
+      - ./data/woodpecker-agent-config:/etc/woodpecker
+      - /var/run/docker.sock:/var/run/docker.sock
+    env_file:
+      - .env.woodpecker-agent
+    environment:
+      - WOODPECKER_SERVER=woodpecker_server:9000
+    networks:
+      - woodpecker
+
+networks:
+  gitea:
+  woodpecker:
+  proxy-net:
+    name: proxy-network
+    external: true
