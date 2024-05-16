@@ -9,6 +9,11 @@ tmp
 .env.production.local
 .env.development.local
 
+.env.gitea
+.env.gitea-db
+.env.woodpecker-agent
+.env.woodpecker
+
 # Frontend assets compiled code
 public/assets
 
