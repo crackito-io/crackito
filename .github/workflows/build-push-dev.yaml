@@ -11,7 +11,7 @@ name: Publish Docker image
 
 on:
   push:
-    branches: [ "development" ]
+    branches: ['development']
 
 env:
   REGISTRY: ghcr.io
@@ -45,4 +45,4 @@ jobs:
           context: ./
           file: ./Dockerfile-dev
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.NAME }}
+          tags: ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.NAME }}:dev
