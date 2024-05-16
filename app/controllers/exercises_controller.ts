@@ -2,131 +2,292 @@ import { prisma } from "#config/app";
 import { HttpContext } from "@adonisjs/core/http";
 import { jwtDecode } from "jwt-decode";
 import { ExercisesRouteSchema } from "../dto/ExercisesRoute.dto.js";
-import { account_exercise } from "@prisma/client";
+import { team } from "@prisma/client";
 
 export default class ExercisesController {
-  public async all(ctx: HttpContext) {
+  async all(ctx: HttpContext) {
     // get user id
     const jwtToken: any = jwtDecode(ctx.request.cookie('jwt'))
 
-    // get list exercise
-    const queryResult = await prisma.account_exercise.findMany({
+    // get list user team
+    const userTeams = await prisma.account_team.findMany({
       where: {
         id_account: jwtToken.id_account,
       },
-      orderBy:{
-        join_date: 'desc'
+      orderBy: {
+        team: {
+          join_project_at: 'desc',
+        },
       },
-      include:{
-        exercise: true
+      include: {
+        team: {
+          include: {
+            project: true,
+          }
+        },
       },
     })
 
-    let exerciseList : any[] = []
+    // get list exercise
+    let exerciseList: any[] = []
 
-    queryResult.forEach((el)=>{
-        exerciseList.push({
-            title: el.exercise.title,
-            description: el.exercise.description,
-            status: el.archived == false ? "Open" : "Closed",
-            status_style: el.archived == false ? "bg-light-primary" : "bg-light-secondary",
-            id_exercise: el.exercise.id_exercise
-        })
+    userTeams.forEach((el) => {
+      exerciseList.push({
+        title: el.team.project.name,
+        description: el.team.project.description,
+        status: el.team.project.status_open ? 'Open' : 'Closed',
+        status_style: el.team.project.status_open ? 'bg-light-primary' : 'bg-light-secondary',
+        status_team: el.team.status_project_finished ? 'Finished' : 'In progress',
+        status_team_style: el.team.status_project_finished ? 'bg-light-success' : 'bg-light-warning',
+        repo_name: el.team.project.repo_name,
+      })
     })
-
 
     return ctx.view.render('features/exercise/exercises', {
       exerciseList: exerciseList,
     })
   }
 
-  headerBuilder(account_exercise: account_exercise) : Promise<any>{
-    return new Promise(async (resolve, reject)=>{
-
-      const exercise = await prisma.exercise.findUnique({
-        where: {
-          id_exercise: account_exercise.id_exercise
-        }
-      })
-
-      resolve({
-        title: exercise?.title,
-        rank: "?th",
-        steps: "?/?",
-        last_commit: "? minutes",
-        status: account_exercise?.archived ? "Closed" : "Open",
-        exercise_id: account_exercise.id_exercise
-      })
-    })
+  getPrintableTime(timestamp: number) {
+    let seconds = timestamp / 1000
+    if (seconds < 60) {
+      return Math.trunc(seconds) + ' second(s)'
+    } else if (seconds < 3600) {
+      return Math.trunc(seconds / 60) + ' minute(s)'
+    } else {
+      return Math.trunc(seconds / 3600) + ' hour(s)'
+    }
   }
 
-  public async details(ctx: HttpContext) {
+  pointGainedFunction(t: number, totalPoints: number) {
+    let x0 = 0
+    let x1 = 0.9 * totalPoints
+    let x2 = 0.4 * totalPoints
+    let x3 = totalPoints
+    return Math.trunc(
+      (1 - t) * ((1 - t) * ((1 - t) * x0 + t * x1) + t * ((1 - t) * x1 + t * x2)) +
+        t * ((1 - t) * ((1 - t) * x1 + t * x2) + t * ((1 - t) * x2 + t * x3))
+    )
+  }
+
+  async getLeaderBoard(currentTeam: team) {
+    let leaderboard = await prisma.team.findMany({
+      where: {
+        project: {
+          repo_name: currentTeam.project.repo_name,
+        },
+      },
+      include: {
+        project: {
+          include: {
+            step: true,
+          },
+        },
+        test: true,
+        account_team: {
+          include: {
+            account: true,
+          },
+        },
+      },
+    })
+
+    //console.log(leaderboard.find((e) => e.account_team))
+
+    let rLeaderboard = []
+
+    let nbPointsProject = 0
+    for (let step of currentTeam.project.step) {
+      nbPointsProject += step.test_number * 4
+    }
+
+    for (let team of leaderboard) {
+      let data = { id_team: team.id_team, teamMembers: [], gainedPoint: 0, maxPoint: nbPointsProject, percentFinished: 0 }
+
+      for (let member of team.account_team) {
+        data.teamMembers.push(member.account.Firstname + ' ' + member.account.Lastname)
+      }
+
+      // points gained by step
+      let gainedPoints = 0
+      for (let step of team.project.step) {
+        let nbPoints = step.test_number * 4
+
+        let nbPassedTest = 0
+        for (let test of team.test) {
+          if (test.id_step === step.id_step) {
+            nbPassedTest += test.status_passed ? 1 : 0
+          }
+        }
+
+        let percentPassedTest = nbPassedTest / step.test_number
+        gainedPoints += this.pointGainedFunction(percentPassedTest, nbPoints)
+        console.log('gain', percentPassedTest, nbPoints, gainedPoints, this.pointGainedFunction(percentPassedTest, nbPoints))
+      }
+
+      data.gainedPoint = Math.trunc(gainedPoints)
+      data.percentFinished = Math.trunc((gainedPoints / nbPointsProject) * 100)
+      rLeaderboard.push(data)
+    }
+
+    rLeaderboard.sort((a, b) => b.gainedPoint - a.gainedPoint)
+
+    return rLeaderboard
+  }
+
+  async headerBuilder(currentTeam: team, leaderboard: object[]) {
+    console.log(leaderboard)
+    let rankCurrentTeam = leaderboard.findIndex((e) => e.id_team === currentTeam.id_team) + 1
+    let stepNotFinished = new Set()
+
+    for (let test of currentTeam.test) {
+      if (!test.status_passed) {
+        stepNotFinished.add(test.id_step)
+      }
+    }
+    let totalStepFinished = currentTeam.project.step.length - stepNotFinished.size
+    console.log(stepNotFinished, currentTeam.project.step.length, totalStepFinished)
+    return {
+      title: currentTeam.project.name,
+      rank: rankCurrentTeam + 'th',
+      steps: totalStepFinished + '/' + currentTeam.project.step.length,
+      last_commit: this.getPrintableTime(Date.now() - currentTeam.last_commit.getTime()),
+      status: currentTeam.project.status_open,
+      status_team: currentTeam.status_project_finished,
+      repo_name: currentTeam.project.repo_name,
+    }
+  }
+
+  async details(ctx: HttpContext) {
     const jwtToken: any = jwtDecode(ctx.request.cookie('jwt'))
 
     try {
-      ExercisesRouteSchema.parse(ctx.params)
+      await ExercisesRouteSchema.parseAsync(ctx.params)
     } catch (error) {
       ctx.response.badRequest({ message: 'Params validation failed', error: error })
       return
     }
 
-    const account_exercise = await prisma.account_exercise.findUnique({
+    const accountTeam = await prisma.account_team.findFirst({
       where: {
-        id_account_id_exercise: {
-          id_account: parseInt(jwtToken.id_account),
-          id_exercise: parseInt(ctx.params['id'])
-        }
-      }
+        id_account: jwtToken.id_account,
+        team: {
+          repo_name: ctx.params.repo_name,
+        },
+      },
+      include: {
+        team: {
+          include: {
+            test: true,
+            project: {
+              include: {
+                step: true,
+              },
+            },
+          },
+        },
+      },
     })
 
-    if (account_exercise == null) {
+    if (accountTeam === null) {
       ctx.response.badRequest({ message: 'You are trying to access an exercise in which you are not registered'})
       return
     }
 
+    let leaderboard = await this.getLeaderBoard(accountTeam.team)
+
     ctx.view.share({
-      ...await this.headerBuilder(account_exercise),
+      ...(await this.headerBuilder(accountTeam.team, leaderboard)),
     })
 
-    return ctx.view.render('features/exercise/exercise_details')
+    return ctx.view.render('features/exercise/exercise_details', { project_description: accountTeam.team.project.description })
   }
 
-  public async scoreboard(ctx: HttpContext){
+  async scoreboard(ctx: HttpContext) {
     const jwtToken: any = jwtDecode(ctx.request.cookie('jwt'))
 
     try {
-      ExercisesRouteSchema.parse(ctx.params)
+      await ExercisesRouteSchema.parseAsync(ctx.params)
     } catch (error) {
       ctx.response.badRequest({ message: 'Params validation failed', error: error })
       return
     }
 
-    const account_exercise = await prisma.account_exercise.findUnique({
+    const accountTeam = await prisma.account_team.findFirst({
       where: {
-        id_account_id_exercise: {
-          id_account: parseInt(jwtToken.id_account),
-          id_exercise: parseInt(ctx.params['id'])
-        }
-      }
+        id_account: jwtToken.id_account,
+        team: {
+          repo_name: ctx.params.repo_name,
+        },
+      },
+      include: {
+        team: {
+          include: {
+            test: true,
+            project: {
+              include: {
+                step: true,
+              },
+            },
+          },
+        },
+      },
     })
 
-    if (account_exercise == null) {
+    if (accountTeam === null) {
       ctx.response.badRequest({ message: 'You are trying to access an exercise in which you are not registered'})
       return
     }
 
+    let leaderboard = await this.getLeaderBoard(accountTeam.team)
+
     ctx.view.share({
-      ...await this.headerBuilder(account_exercise),
+      ...(await this.headerBuilder(accountTeam.team, leaderboard)),
     })
 
-    return ctx.view.render('features/exercise/exercise_scoreboard')
+    let userProgress = []
+
+    for (let step of accountTeam.team.project.step) {
+      let data = {
+        step_description: step.description,
+        step_title: step.title,
+        step_test_number: step.test_number,
+        step_all_tests_passed: true,
+        step_tests: [],
+      }
+      // trier par num_order les steps
+      for (let test of accountTeam.team.test) {
+        if (test.id_step === step.id_step) {
+          if (!test.status_passed) {
+            data.step_all_tests_passed = false
+          }
+          data.step_tests.push({name:test.test_name, message: test.message, detailed_message:test.detailed_message, passed:test.status_passed})
+        }
+      }
+
+      userProgress.push(data)
+    }
+
+    return ctx.view.render('features/exercise/exercise_scoreboard', { project_leaderboard: leaderboard, userProgress: userProgress })
   }
 
-  public async helper(ctx: HttpContext){
+
+
+
+
+
+
+
+
+
+
+
+
+  async helper(ctx: HttpContext) {
     const jwtToken: any = jwtDecode(ctx.request.cookie('jwt'))
 
     try {
-      ExercisesRouteSchema.parse(ctx.params)
+      await ExercisesRouteSchema.parseAsync(ctx.params)
     } catch (error) {
       ctx.response.badRequest({ message: 'Params validation failed', error: error })
       return
@@ -153,11 +314,11 @@ export default class ExercisesController {
     return ctx.view.render('features/exercise/exercise_helper')
   }
 
-  public async logs(ctx: HttpContext){
+  async logs(ctx: HttpContext){
     const jwtToken: any = jwtDecode(ctx.request.cookie('jwt'))
 
     try {
-      ExercisesRouteSchema.parse(ctx.params)
+      await ExercisesRouteSchema.parseAsync(ctx.params)
     } catch (error) {
       ctx.response.badRequest({ message: 'Params validation failed', error: error })
       return

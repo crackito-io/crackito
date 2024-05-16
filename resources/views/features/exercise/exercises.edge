@@ -7,10 +7,13 @@
                 <div class="col-md-4">
                     <div class="card">
                         <div class="card-body">
-                            <h5 class="card-title">{{exercise.title}} <span class="badge {{exercise.status_style}}">{{exercise.status}}</span>
+                            <h5 class="card-title">
+                              {{exercise.title}}
+                              <span class="badge {{exercise.status_style}}">{{exercise.status}}</span>
+                              <span class="badge {{exercise.status_team_style}}">{{exercise.status_team}}</span>
                             </h5>
                             <p class="card-text">{{exercise.description}}</p>
-                            <a href="/exercises/{{exercise.id_exercise}}" class="btn btn-primary">
+                            <a href="/exercises/{{exercise.repo_name}}" class="btn btn-primary">
                                 <svg class="pc-icon me-2">
                                     <use xlink:href="#custom-logout-1-outline"></use>
                                 </svg>

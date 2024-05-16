@@ -32,27 +32,42 @@
 
             <div class="row">
                 <div class="col-lg-3 col-md-6">
-                    <div class="card bg-primary">
+                    <div class="card">
                         <div class="card-body">
                             <div class="row align-items-center">
                                 <div class="col-8">
-                                    <h3 class="mb-1 text-white">{{ rank }} rank</h3>
-                                    <p class="mb-0 text-white">in your group</p>
+                                    <h3 class="mb-1">{{ rank }} rank</h3>
+                                    <p class="mb-0">in your group</p>
                                 </div>
                                 <div class="col-4 text-end">
-                                    <i class="ti ti-trophy text-white f-36"></i>
+                                    <i class="ti ti-trophy f-36"></i>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6">
-                    <div class="card">
+                  <div class="card">
+                      <div class="card-body">
+                          <div class="row align-items-center">
+                              <div class="col-8">
+                                  <h3 class="mb-1">{{ last_commit }} ago</h3>
+                                  <p class="text-muted mb-0">last commit</p>
+                              </div>
+                              <div class="col-4 text-end">
+                                  <i class="ti ti-brand-github f-36"></i>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="card {{ status_team ? 'bg-light-success border-success' : 'bg-light-warning border-warning' }}">
                         <div class="card-body">
                             <div class="row align-items-center">
                                 <div class="col-8">
-                                    <h3 class="mb-1">{{ steps }} finished</h3>
-                                    <p class="text-muted mb-0">steps</p>
+                                    <h3 class="mb-1 {{ status_team ? 'text-success' : 'text-warning' }}">{{ steps }} finished</h3>
+                                    <p class="text-muted mb-0 text-success">steps</p>
                                 </div>
                                 <div class="col-4 text-end">
                                     <i class="ti ti-flag-3 f-36"></i>
@@ -62,30 +77,15 @@
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6">
-                    <div class="card">
+                    <div class="card {{ status ? 'bg-light-primary border-primary' : 'bg-light-secondary border-secondary' }}">
                         <div class="card-body">
                             <div class="row align-items-center">
                                 <div class="col-8">
-                                    <h3 class="mb-1">{{ last_commit }} ago</h3>
-                                    <p class="text-muted mb-0">last commit</p>
-                                </div>
-                                <div class="col-4 text-end">
-                                    <i class="ti ti-brand-github f-36"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="row align-items-center">
-                                <div class="col-8">
-                                    <h3 class="mb-1 text-success">{{ status }}</h3>
+                                    <h3 class="mb-1 {{ status ? 'text-primary' : 'text-secondary' }}">{{ status ? 'Open' : 'Closed' }}</h3>
                                     <p class="text-muted mb-0">exercise status</p>
                                 </div>
                                 <div class="col-4 text-end">
-                                    <i class="ti ti-lock-open text-success f-36"></i>
+                                    <i class="ti ti-lock-open {{ status ? 'text-primary' : 'text-secondary' }} f-36"></i>
                                 </div>
                             </div>
                         </div>
@@ -99,25 +99,25 @@
                         <div class="card-body py-0">
                             <ul class="nav nav-tabs profile-tabs">
                                 <li class="nav-item">
-                                    <a class="nav-link activable" rule="/details" id="profile-tab-1" href="/exercises/{{exercise_id}}/details"
+                                    <a class="nav-link activable" rule="/details" id="profile-tab-1" href="/exercises/{{repo_name}}/details"
                                         aria-selected="true">
                                         <i class="ti ti-target me-2"></i>Exercise
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link activable" rule="/scoreboard" id="profile-tab-2" href="/exercises/{{exercise_id}}/scoreboard"
+                                    <a class="nav-link activable" rule="/scoreboard" id="profile-tab-2" href="/exercises/{{repo_name}}/scoreboard"
                                         aria-selected="true">
                                         <i class="ti ti-trophy me-2"></i>Scoreboard
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link activable" rule="/helper" id="profile-tab-2" href="/exercises/{{exercise_id}}/helper"
+                                    <a class="nav-link activable" rule="/helper" id="profile-tab-2" href="/exercises/{{repo_name}}/helper"
                                         aria-selected="true">
                                         <i class="ti ti-ghost me-2"></i>Helper
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link activable" rule="/logs" id="profile-tab-3" href="/exercises/{{exercise_id}}/logs"
+                                    <a class="nav-link activable" rule="/logs" id="profile-tab-3" href="/exercises/{{repo_name}}/logs"
                                         aria-selected="true">
                                         <i class="ti ti-file-text me-2"></i>Logs
                                     </a>
