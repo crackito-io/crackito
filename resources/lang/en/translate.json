@@ -116,5 +116,7 @@
     "title_scoreboard":"Scoreboard",
 
     "test_to_pass_text":"tests to pass",
-    "points_text":"points"
+    "points_text":"points",
+
+    "not_in_exercise_error":"You are trying to access an exercise in which you are not registered !"
 }

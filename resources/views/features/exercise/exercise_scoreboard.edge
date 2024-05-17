@@ -19,7 +19,7 @@
 </div>
 <!-- [ Complete error Pop-up ] end -->
 <div class="row">
-    <div class="col-xl-6 col-md-12">
+    <div class="col-xl-{{ userProgress ? '6' : '12' }} col-md-12">
         <div class="card new-cust-card">
             <div class="card-header">
                 <h5>{{ t('translate.title_scoreboard') }}</h5>
@@ -48,7 +48,7 @@
             </div>
         </div>
     </div>
-
+    @if(userProgress)
     <div class="col-xl-6 col-md-12">
         <div class="card task-card">
             <div class="card-header d-flex align-items-center justify-content-between">
@@ -84,6 +84,7 @@
             </div>
         </div>
     </div>
+    @endif
 </div>
 <script>
 function completeErrorPopUp(content) {

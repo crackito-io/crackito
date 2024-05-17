@@ -3,6 +3,7 @@ import { HttpContext } from "@adonisjs/core/http";
 import { jwtDecode } from "jwt-decode";
 import { ExercisesRouteSchema } from "../dto/ExercisesRoute.dto.js";
 import { team } from "@prisma/client";
+import { project } from "@prisma/client";
 
 export default class ExercisesController {
   async all(ctx: HttpContext) {
@@ -69,35 +70,33 @@ export default class ExercisesController {
   }
 
   async getLeaderBoard(repo_name: string) {
-    let teams = await prisma.team.findMany({
+    let projectObject = await prisma.project.findFirst({
       where: {
-        project: {
-          repo_name: repo_name,
-        },
+        repo_name: repo_name,
       },
       include: {
-        project: {
+        step: true,
+        team: {
           include: {
-            step: true,
-          },
-        },
-        test: true,
-        account_team: {
-          include: {
-            account: true,
+            test: true,
+            account_team: {
+              include: {
+                account: true,
+              },
+            },
           },
         },
       },
     })
 
-    let project = { teams: teams, leaderboard: [] }
+    let project = { project: projectObject, leaderboard: [] }
 
     let nbPointsProject = 0
-    for (let step of teams[0].project.step) {
+    for (let step of project.project.step) {
       nbPointsProject += step.test_number * 4
     }
 
-    for (let team of teams) {
+    for (let team of project.project.team) {
       let data = { id_team: team.id_team, teamMembers: [], gainedPoint: 0, maxPoint: nbPointsProject, percentFinished: 0 }
 
       for (let member of team.account_team) {
@@ -106,7 +105,7 @@ export default class ExercisesController {
 
       // points gained by step
       let gainedPoints = 0
-      for (let step of team.project.step) {
+      for (let step of project.project.step) {
         let nbPoints = step.test_number * 4
 
         let nbPassedTest = 0
@@ -130,7 +129,28 @@ export default class ExercisesController {
     return project
   }
 
-  async headerBuilder(currentTeam: team, leaderboard: object[], ctx: HttpContext) {
+  async headerBuilder(currentTeam: team, project: project, leaderboard: object[], ctx: HttpContext, idAccount: number) {
+    if (!currentTeam) {
+      console.log(idAccount, project.id_account)
+      if (idAccount === project.id_account) {
+        return {
+          title: project.name,
+          rank: '-',
+          steps: '-/' + project.step.length,
+          last_commit: '-',
+          status: project.status_open,
+          status_team: true,
+          repo_name: project.repo_name,
+        }
+      }
+      ctx.session.flash('notifications', {
+        type: 'danger',
+        title: ctx.i18n.t('translate.error'),
+        message: ctx.i18n.t('translate.not_in_exercise_error'),
+      })
+      return ctx.response.redirect().back()
+    }
+
     let rankCurrentTeam = leaderboard.findIndex((e) => e.id_team === currentTeam.id_team) + 1
     let stepNotFinished = new Set()
 
@@ -139,21 +159,32 @@ export default class ExercisesController {
         stepNotFinished.add(test.id_step)
       }
     }
-    let totalStepFinished = currentTeam.project.step.length - stepNotFinished.size
+    let totalStepFinished = project.step.length - stepNotFinished.size
     return {
-      title: currentTeam.project.name,
+      title: project.name,
       rank: rankCurrentTeam,
-      steps: totalStepFinished + '/' + currentTeam.project.step.length,
+      steps: totalStepFinished + '/' + project.step.length,
       last_commit: this.getPrintableTime(Date.now() - currentTeam.last_commit.getTime(), ctx),
-      status: currentTeam.project.status_open,
+      status: project.status_open,
       status_team: currentTeam.status_project_finished,
-      repo_name: currentTeam.project.repo_name,
+      repo_name: project.repo_name,
     }
   }
 
   async details(ctx: HttpContext) {
     const jwtToken: any = jwtDecode(ctx.request.cookie('jwt'))
 
+    const idAccount = jwtToken.id_account
+
+    if (idAccount === null) {
+      ctx.session.flash('notifications', {
+        type: 'danger',
+        title: ctx.i18n.t('translate.error'),
+        message: ctx.i18n.t('translate.unknown_error'),
+      })
+      return ctx.response.redirect().back()
+    }
+
     try {
       await ExercisesRouteSchema.parseAsync(ctx.params)
     } catch (error) {
@@ -162,21 +193,29 @@ export default class ExercisesController {
     }
 
     let project = await this.getLeaderBoard(ctx.params.repo_name)
-    let currentTeam = project.teams.find((e) => e.account_team.find((f) => f.id_account == jwtToken.id_account))
+    let currentTeam = project.project.team.find((e) =>
+      e.account_team.find((f) => f.id_account === idAccount)
+    )
 
-    if (!currentTeam) {
-      ctx.response.badRequest({ message: 'You are trying to access an exercise in which you are not registered'})
-      return
-    }
+    ctx.view.share({ ...(await this.headerBuilder(currentTeam, project.project, project.leaderboard, ctx, idAccount)) })
 
-    ctx.view.share({ ...(await this.headerBuilder(currentTeam, project.leaderboard, ctx)) })
-
-    return ctx.view.render('features/exercise/exercise_details', { project_description: currentTeam.project.description })
+    return ctx.view.render('features/exercise/exercise_details', { project_description: project.project.description })
   }
 
   async scoreboard(ctx: HttpContext) {
     const jwtToken: any = jwtDecode(ctx.request.cookie('jwt'))
 
+    const idAccount = jwtToken.id_account
+
+    if (idAccount === null) {
+      ctx.session.flash('notifications', {
+        type: 'danger',
+        title: ctx.i18n.t('translate.error'),
+        message: ctx.i18n.t('translate.unknown_error'),
+      })
+      return ctx.response.redirect().back()
+    }
+
     try {
       await ExercisesRouteSchema.parseAsync(ctx.params)
     } catch (error) {
@@ -185,18 +224,20 @@ export default class ExercisesController {
     }
 
     let project = await this.getLeaderBoard(ctx.params.repo_name)
-    let currentTeam = project.teams.find((e) => e.account_team.find((f) => f.id_account == jwtToken.id_account))
+    let currentTeam = project.project.team.find((e) =>
+      e.account_team.find((f) => f.id_account === idAccount)
+    )
 
+    ctx.view.share({ ...(await this.headerBuilder(currentTeam, project.project, project.leaderboard, ctx, idAccount)) })
+
+    // view as project owner
     if (!currentTeam) {
-      ctx.response.badRequest({ message: 'You are trying to access an exercise in which you are not registered'})
-      return
+      return ctx.view.render('features/exercise/exercise_scoreboard', { project_leaderboard: project.leaderboard, userProgress: null })
     }
-
-    ctx.view.share({ ...(await this.headerBuilder(currentTeam, project.leaderboard, ctx)) })
 
     let userProgress = []
 
-    let projectSteps = currentTeam.project.step.sort((a, b) => a.num_order - b.num_order)
+    let projectSteps = project.project.step.sort((a, b) => a.num_order - b.num_order)
 
     for (let step of projectSteps) {
       let data = {
@@ -225,6 +266,17 @@ export default class ExercisesController {
   async helper(ctx: HttpContext) {
     const jwtToken: any = jwtDecode(ctx.request.cookie('jwt'))
 
+    const idAccount = jwtToken.id_account
+
+    if (idAccount === null) {
+      ctx.session.flash('notifications', {
+        type: 'danger',
+        title: ctx.i18n.t('translate.error'),
+        message: ctx.i18n.t('translate.unknown_error'),
+      })
+      return ctx.response.redirect().back()
+    }
+
     try {
       await ExercisesRouteSchema.parseAsync(ctx.params)
     } catch (error) {
@@ -233,14 +285,11 @@ export default class ExercisesController {
     }
 
     let project = await this.getLeaderBoard(ctx.params.repo_name)
-    let currentTeam = project.teams.find((e) => e.account_team.find((f) => f.id_account == jwtToken.id_account))
+    let currentTeam = project.project.team.find((e) =>
+      e.account_team.find((f) => f.id_account === idAccount)
+    )
 
-    if (!currentTeam) {
-      ctx.response.badRequest({ message: 'You are trying to access an exercise in which you are not registered'})
-      return
-    }
-
-    ctx.view.share({ ...(await this.headerBuilder(currentTeam, project.leaderboard, ctx)) })
+    ctx.view.share({ ...(await this.headerBuilder(currentTeam, project.project, project.leaderboard, ctx, idAccount)) })
 
     return ctx.view.render('features/exercise/exercise_helper')
   }
@@ -248,6 +297,17 @@ export default class ExercisesController {
   async logs(ctx: HttpContext){
     const jwtToken: any = jwtDecode(ctx.request.cookie('jwt'))
 
+    const idAccount = jwtToken.id_account
+
+    if (idAccount === null) {
+      ctx.session.flash('notifications', {
+        type: 'danger',
+        title: ctx.i18n.t('translate.error'),
+        message: ctx.i18n.t('translate.unknown_error'),
+      })
+      return ctx.response.redirect().back()
+    }
+
     try {
       await ExercisesRouteSchema.parseAsync(ctx.params)
     } catch (error) {
@@ -256,15 +316,11 @@ export default class ExercisesController {
     }
 
     let project = await this.getLeaderBoard(ctx.params.repo_name)
-    let currentTeam = project.teams.find((e) => e.account_team.find((f) => f.id_account == jwtToken.id_account))
+    let currentTeam = project.project.team.find((e) =>
+      e.account_team.find((f) => f.id_account === idAccount)
+    )
 
-    if (!currentTeam) {
-      ctx.response.badRequest({ message: 'You are trying to access an exercise in which you are not registered'})
-      return
-    }
-
-    ctx.view.share({ ...(await this.headerBuilder(currentTeam, project.leaderboard, ctx)) })
-
+    ctx.view.share({ ...(await this.headerBuilder(currentTeam, project.project, project.leaderboard, ctx, idAccount)) })
 
     return ctx.view.render('features/exercise/exercise_logs')
   }

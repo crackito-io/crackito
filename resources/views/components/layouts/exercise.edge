@@ -85,7 +85,7 @@
                                     <p class="text-muted mb-0">{{ t('translate.status_label') }}</p>
                                 </div>
                                 <div class="col-4 text-end">
-                                    <i class="ti ti-lock-open {{ status ? 'text-primary' : 'text-secondary' }} f-36"></i>
+                                    <i class="ti ti-lock{{ status ? '-open' : '' }} {{ status ? 'text-primary' : 'text-secondary' }} f-36"></i>
                                 </div>
                             </div>
                         </div>
