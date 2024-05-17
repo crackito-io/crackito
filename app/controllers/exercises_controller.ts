@@ -23,7 +23,7 @@ export default class ExercisesController {
         team: {
           include: {
             project: true,
-          }
+          },
         },
       },
     })
@@ -68,11 +68,11 @@ export default class ExercisesController {
     )
   }
 
-  async getLeaderBoard(currentTeam: team) {
-    let leaderboard = await prisma.team.findMany({
+  async getLeaderBoard(repo_name: string) {
+    let teams = await prisma.team.findMany({
       where: {
         project: {
-          repo_name: currentTeam.project.repo_name,
+          repo_name: repo_name,
         },
       },
       include: {
@@ -90,16 +90,14 @@ export default class ExercisesController {
       },
     })
 
-    //console.log(leaderboard.find((e) => e.account_team))
-
-    let rLeaderboard = []
+    let project = { teams: teams, leaderboard: [] }
 
     let nbPointsProject = 0
-    for (let step of currentTeam.project.step) {
+    for (let step of teams[0].project.step) {
       nbPointsProject += step.test_number * 4
     }
 
-    for (let team of leaderboard) {
+    for (let team of teams) {
       let data = { id_team: team.id_team, teamMembers: [], gainedPoint: 0, maxPoint: nbPointsProject, percentFinished: 0 }
 
       for (let member of team.account_team) {
@@ -120,21 +118,19 @@ export default class ExercisesController {
 
         let percentPassedTest = nbPassedTest / step.test_number
         gainedPoints += this.pointGainedFunction(percentPassedTest, nbPoints)
-        console.log('gain', percentPassedTest, nbPoints, gainedPoints, this.pointGainedFunction(percentPassedTest, nbPoints))
       }
 
       data.gainedPoint = Math.trunc(gainedPoints)
       data.percentFinished = Math.trunc((gainedPoints / nbPointsProject) * 100)
-      rLeaderboard.push(data)
+      project.leaderboard.push(data)
     }
 
-    rLeaderboard.sort((a, b) => b.gainedPoint - a.gainedPoint)
+    project.leaderboard.sort((a, b) => b.gainedPoint - a.gainedPoint)
 
-    return rLeaderboard
+    return project
   }
 
   async headerBuilder(currentTeam: team, leaderboard: object[], ctx: HttpContext) {
-    console.log(leaderboard)
     let rankCurrentTeam = leaderboard.findIndex((e) => e.id_team === currentTeam.id_team) + 1
     let stepNotFinished = new Set()
 
@@ -144,7 +140,6 @@ export default class ExercisesController {
       }
     }
     let totalStepFinished = currentTeam.project.step.length - stepNotFinished.size
-    console.log(stepNotFinished, currentTeam.project.step.length, totalStepFinished)
     return {
       title: currentTeam.project.name,
       rank: rankCurrentTeam,
@@ -166,39 +161,17 @@ export default class ExercisesController {
       return
     }
 
-    const accountTeam = await prisma.account_team.findFirst({
-      where: {
-        id_account: jwtToken.id_account,
-        team: {
-          repo_name: ctx.params.repo_name,
-        },
-      },
-      include: {
-        team: {
-          include: {
-            test: true,
-            project: {
-              include: {
-                step: true,
-              },
-            },
-          },
-        },
-      },
-    })
+    let project = await this.getLeaderBoard(ctx.params.repo_name)
+    let currentTeam = project.teams.find((e) => e.account_team.find((f) => f.id_account == jwtToken.id_account))
 
-    if (accountTeam === null) {
+    if (!currentTeam) {
       ctx.response.badRequest({ message: 'You are trying to access an exercise in which you are not registered'})
       return
     }
 
-    let leaderboard = await this.getLeaderBoard(accountTeam.team)
+    ctx.view.share({ ...(await this.headerBuilder(currentTeam, project.leaderboard, ctx)) })
 
-    ctx.view.share({
-      ...(await this.headerBuilder(accountTeam.team, leaderboard)),
-    })
-
-    return ctx.view.render('features/exercise/exercise_details', { project_description: accountTeam.team.project.description })
+    return ctx.view.render('features/exercise/exercise_details', { project_description: currentTeam.project.description })
   }
 
   async scoreboard(ctx: HttpContext) {
@@ -211,41 +184,21 @@ export default class ExercisesController {
       return
     }
 
-    const accountTeam = await prisma.account_team.findFirst({
-      where: {
-        id_account: jwtToken.id_account,
-        team: {
-          repo_name: ctx.params.repo_name,
-        },
-      },
-      include: {
-        team: {
-          include: {
-            test: true,
-            project: {
-              include: {
-                step: true,
-              },
-            },
-          },
-        },
-      },
-    })
+    let project = await this.getLeaderBoard(ctx.params.repo_name)
+    let currentTeam = project.teams.find((e) => e.account_team.find((f) => f.id_account == jwtToken.id_account))
 
-    if (accountTeam === null) {
+    if (!currentTeam) {
       ctx.response.badRequest({ message: 'You are trying to access an exercise in which you are not registered'})
       return
     }
 
-    let leaderboard = await this.getLeaderBoard(accountTeam.team)
-
-    ctx.view.share({
-      ...(await this.headerBuilder(accountTeam.team, leaderboard, ctx)),
-    })
+    ctx.view.share({ ...(await this.headerBuilder(currentTeam, project.leaderboard, ctx)) })
 
     let userProgress = []
 
-    for (let step of accountTeam.team.project.step) {
+    let projectSteps = currentTeam.project.step.sort((a, b) => a.num_order - b.num_order)
+
+    for (let step of projectSteps) {
       let data = {
         step_description: step.description,
         step_title: step.title,
@@ -254,7 +207,7 @@ export default class ExercisesController {
         step_tests: [],
       }
       // trier par num_order les steps
-      for (let test of accountTeam.team.test) {
+      for (let test of currentTeam.test) {
         if (test.id_step === step.id_step) {
           if (!test.status_passed) {
             data.step_all_tests_passed = false
@@ -266,20 +219,8 @@ export default class ExercisesController {
       userProgress.push(data)
     }
 
-    return ctx.view.render('features/exercise/exercise_scoreboard', { project_leaderboard: leaderboard, userProgress: userProgress })
+    return ctx.view.render('features/exercise/exercise_scoreboard', { project_leaderboard: project.leaderboard, userProgress: userProgress })
   }
-
-
-
-
-
-
-
-
-
-
-
-
 
   async helper(ctx: HttpContext) {
     const jwtToken: any = jwtDecode(ctx.request.cookie('jwt'))
