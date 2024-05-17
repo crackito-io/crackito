@@ -1,8 +1,29 @@
 @component('components/layouts/main')
     @slot('main')
     <div class="pc-content">
+      <!-- [ breadcrumb ] start -->
+      <div class="page-header">
+        <div class="page-block">
+          <div class="row align-items-center">
+            <div class="col-md-12">
+              <ul class="breadcrumb mb-3">
+                <li class="breadcrumb-item" aria-current="page">{{t('translate.exercise_breadcrum')}}</li>
+              </ul>
+            </div>
+            <div class="col-md-12">
+              <div class="page-header-title">
+                <h2 class="mb-0">{{t('translate.exercise_breadcrum')}}</h2>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- [ breadcrumb ] end -->
         <div class="container mt-4">
             <div class="row">
+                @if(exerciseList.length != 0 && exerciseOwnedList.length != 0)
+                <h3>{{t('translate.exercise_breadcrum')}}</h3>
+                @endif
                 @each(exercise in exerciseList)
                 <div class="col-md-4">
                     <div class="card">
@@ -22,6 +43,28 @@
                         </div>
                     </div>
                 </div>
+                @end
+                @if(exerciseList.length != 0 && exerciseOwnedList.length != 0)
+                <h3>{{t('translate.exercise_breadcrum')}}</h3>
+                @endif
+                @each(exercise in exerciseOwnedList)
+                <div class="col-md-4">
+                  <div class="card">
+                      <div class="card-body">
+                          <h5 class="card-title">
+                            {{exercise.title}}
+                            <span class="badge {{exercise.status_open ? 'bg-light-primary' : 'bg-light-secondary'}}">{{exercise.status_open ? t('translate.status_open') : t('translate.status_closed') }}</span>
+                          </h5>
+                          <p class="card-text">{{exercise.description}}</p>
+                          <a href="/exercises/{{exercise.repo_name}}" class="btn btn-primary">
+                              <svg class="pc-icon me-2">
+                                  <use xlink:href="#custom-logout-1-outline"></use>
+                              </svg>
+                              <span>{{ t('translate.show_exercice') }}</span>
+                          </a>
+                      </div>
+                  </div>
+              </div>
                 @end
             </div>
         </div>

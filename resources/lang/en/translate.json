@@ -78,6 +78,7 @@
     "server_error":"Internal servor error happened",
 
     "join_exercice":"Join",
+    "show_exercice":"Show",
     "status_closed": "Closed",
     "status_open": "Open",
     "status_finished": "Finished",

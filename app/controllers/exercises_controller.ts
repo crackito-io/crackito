@@ -30,7 +30,7 @@ export default class ExercisesController {
     })
 
     // get list exercise
-    let exerciseList: any[] = []
+    let exerciseList: object[] = []
 
     userTeams.forEach((el) => {
       exerciseList.push({
@@ -42,8 +42,30 @@ export default class ExercisesController {
       })
     })
 
+    // get exercises owned by user
+    const exerciseOwned = await prisma.project.findMany({
+      where: {
+        id_account: jwtToken.id_account,
+      },
+      orderBy: {
+        end_time: 'asc',
+      },
+    })
+
+    let exerciseOwnedList: object[] = []
+
+    exerciseOwned.forEach((e) => {
+      exerciseOwnedList.push({
+        title: e.name,
+        description: e.description,
+        status_open: e.status_open,
+        repo_name: e.repo_name,
+      })
+    })
+
     return ctx.view.render('features/exercise/exercises', {
       exerciseList: exerciseList,
+      exerciseOwnedList: exerciseOwnedList,
     })
   }
 
@@ -247,7 +269,6 @@ export default class ExercisesController {
         step_all_tests_passed: true,
         step_tests: [],
       }
-      // trier par num_order les steps
       for (let test of currentTeam.test) {
         if (test.id_step === step.id_step) {
           if (!test.status_passed) {
