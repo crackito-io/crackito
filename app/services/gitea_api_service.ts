@@ -1,82 +1,175 @@
 import env from '#start/env'
-import axios from 'axios'
+import { HttpService } from '#services/http_service'
+import {
+  GitRepositoryAlreadyExists,
+  GitRepositoryNotATemplate,
+  GitRepositoryNotFound,
+  UserNotFound,
+  ExternalAPIError,
+} from '#services/custom_error'
 
-export default class GiteaApiService {
+export type GiteaWebhook = {
+  url: string
+  secret: string
+}
+
+export type GiteaProtectedBranch = {
+  branch: string
+  files: Array<string>
+}
+
+export class GiteaApiService {
   private owner_name: string = ''
-  private access_token: string = `Bearer ${env.get('GITEA_TOKEN')}`
-  private api_url: string = `${env.get('GITEA_URL')}/api/v1`
+  private http_service: HttpService = new HttpService(`${env.get('GITEA_URL')}/api/v1`, {
+    Authorization: `Bearer ${env.get('GITEA_TOKEN')}`,
+  })
 
-  createRepository(repo_name: string) {
-    const url = `${this.api_url}/user/repos`
-
-    return new Promise<any>((resolve, reject) => {
-      try {
-        const result = this.postMethod(
-          url,
-          {
-            name: repo_name,
-            auto_init: true,
-            default_branch: 'main',
-            private: true,
-            template: true,
-          },
-          {
-            Authorization: this.access_token,
-          }
-        )
-        resolve(result)
-      } catch (error) {
-        reject(new Error(error))
-      }
-    })
+  async createRepository(repo_name: string) {
+    const url: string = `/user/repos`
+    try {
+      return await this.http_service.post(url, {
+        name: repo_name,
+        auto_init: true,
+        default_branch: 'main',
+        private: true,
+        template: true,
+      })
+    } catch (error) {
+      throw new ExternalAPIError(
+        error.response.status,
+        error.response.data,
+        error,
+        error.response.data.message
+      )
+    }
   }
 
   async addMemberToRepository(repo_name: string, username: string) {
     await this.getOWner()
-    const url = `${this.api_url}/repos/${this.owner_name}/${repo_name}/collaborators/${username}`
+    await this.memberExist(username)
+    const url = `/repos/${this.owner_name}/${repo_name}/collaborators/${username}`
     const body = {
       permission: 'write',
     }
     try {
-      let result = await this.putMethod(url, body, { Authorization: this.access_token })
-      return result
+      return await this.http_service.put(url, body)
     } catch (error) {
-      let error_ = {
-        status: error.response.status,
-        statusText: error.response.data.message,
-      }
-      return error_
+      throw new ExternalAPIError(
+        error.response.status,
+        error.response.data,
+        error,
+        error.response.data.message
+      )
     }
   }
 
-  async initTP(repo_name: string, members: Array<string>) {
+  async initExercise(
+    repo_name: string,
+    members: Array<string>,
+    webhook: GiteaWebhook,
+    protection: GiteaProtectedBranch
+  ) {
     await this.getOWner()
-    let members_repo = await this.repoFromTemplate(repo_name, `${repo_name}-${members.join('-')}`)
+    let newName = `${repo_name}-${members.join('-')}`
+    let membersRepo = await this.createRepoFromTemplate(repo_name, newName)
+    let repoName = membersRepo.data.name
+
     for (let member of members) {
-      await this.addMemberToRepository(members_repo, member)
+      await this.addMemberToRepository(repoName, member)
+    }
+    await this.addWebhook(repoName, webhook)
+    await this.protectBranch(repoName, protection)
+
+    return membersRepo
+  }
+
+  async removeCIWebhook(repo_name: string) {
+    await this.getOWner()
+    const url = `/repos/${this.owner_name}/${repo_name}/hooks`
+    try {
+      const result = await this.http_service.get(url)
+      for (let hook of result.data) {
+        if (hook.config.url.includes(env.get('WOODPECKER_URL'))) {
+          await this.deleteWebhook(repo_name, hook.id)
+        }
+      }
+    } catch (error) {
+      if (error.response.status === 404) {
+        let externalError: ExternalAPIError = new ExternalAPIError(
+          error.response.status,
+          error.response.data,
+          error,
+          error.response.data.message
+        )
+        externalError.addErrorDetails(new GitRepositoryNotFound(repo_name))
+        throw externalError
+      }
     }
   }
 
-  private postMethod(url: string, body: object, headers: object) {
-    return axios.post(url, body, {
-      headers: headers,
-    })
+  private async addWebhook(repo_name: string, webhook: GiteaWebhook) {
+    await this.getOWner()
+    const url = `/repos/${this.owner_name}/${repo_name}/hooks`
+    const body = {
+      active: true,
+      type: 'gitea',
+      authorization_header: webhook.secret,
+      branch_filter: 'main',
+      config: {
+        url: webhook.url,
+        content_type: 'json',
+        http_method: 'post',
+      },
+      events: ['push'],
+    }
+    try {
+      return await this.http_service.post(url, body)
+    } catch (error) {
+      throw new ExternalAPIError(
+        error.response.status,
+        error.response.data,
+        error,
+        error.response.data.message
+      )
+    }
   }
 
-  private getMethod(url: string, headers: object) {
-    return axios.get(url, {
-      headers: headers,
-    })
+  private async deleteWebhook(repo_name: string, webhook_id: number) {
+    await this.getOWner()
+    const url = `/repos/${this.owner_name}/${repo_name}/hooks/${webhook_id}`
+    try {
+      return await this.http_service.delete(url)
+    } catch (error) {
+      throw new ExternalAPIError(
+        error.response.status,
+        error.response.data,
+        error,
+        error.response.data.message
+      )
+    }
   }
 
-  private putMethod(url: string, body: object, headers: object) {
-    return axios.put(url, body, {
-      headers: headers,
-    })
+  private async protectBranch(repo_name: string, protection: GiteaProtectedBranch) {
+    const url = `/repos/${this.owner_name}/${repo_name}/branch_protections`
+    const body = {
+      branch_name: protection.branch,
+      enable_push: true,
+      protected_file_patterns: protection.files.join(';'),
+    }
+    try {
+      return await this.http_service.post(url, body)
+    } catch (error) {
+      throw new ExternalAPIError(
+        error.response.status,
+        error.response.data,
+        error,
+        error.response.data.message
+      )
+    }
   }
 
-  private async repoFromTemplate(repo_name: string, fork_name: string) {
-    const url = `${this.api_url}/repos/${this.owner_name}/${repo_name}/generate`
+  private async createRepoFromTemplate(repo_name: string, fork_name: string) {
+    const url = `/repos/${this.owner_name}/${repo_name}/generate`
     const body = {
       name: fork_name,
       owner: this.owner_name,
@@ -87,17 +180,61 @@ export default class GiteaApiService {
       labels: false,
       webhooks: false,
     }
-    const result = await this.postMethod(url, body, { Authorization: this.access_token })
-
-    return result.data.name
+    try {
+      return await this.http_service.post(url, body)
+    } catch (error) {
+      let externalError: ExternalAPIError = new ExternalAPIError(
+        error.response.status,
+        error.response.data,
+        error,
+        error.response.data.message
+      )
+      if (error.response.status === 404) {
+        externalError.addErrorDetails(new GitRepositoryNotFound(repo_name))
+        throw externalError
+      } else if (error.response.status === 409) {
+        externalError.addErrorDetails(new GitRepositoryAlreadyExists(fork_name))
+        throw externalError
+      } else if (error.response.status === 422) {
+        externalError.addErrorDetails(new GitRepositoryNotATemplate(repo_name))
+        throw externalError
+      }
+      throw externalError
+    }
   }
 
   private async getOWner() {
     if (this.owner_name) {
       return
     }
-    const url = `${this.api_url}/user`
-    const result = await this.getMethod(url, { Authorization: this.access_token })
-    this.owner_name = result.data.username
+    const url = `/user`
+    try {
+      const result = await this.http_service.get(url)
+      this.owner_name = result.data.username
+    } catch (error) {
+      throw new ExternalAPIError(
+        error.response.status,
+        error.response.data,
+        error,
+        error.response.data.message
+      )
+    }
+  }
+
+  private async memberExist(username: string) {
+    const url = `/users/${username}`
+    try {
+      await this.http_service.get(url)
+      return true
+    } catch (error) {
+      let externalError: ExternalAPIError = new ExternalAPIError(
+        error.response.status,
+        error.response.data,
+        error,
+        error.response.data.message
+      )
+      externalError.addErrorDetails(new UserNotFound(username))
+      throw externalError
+    }
   }
 }
