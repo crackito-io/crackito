@@ -83,6 +83,38 @@ export class GiteaApiService {
     return membersRepo
   }
 
+  async createUser(
+    username: string,
+    password: string,
+    email: string,
+    first_name: string,
+    last_name: string
+  ) {
+    const url = `/admin/users`
+    const body = {
+      username: username,
+      password: password,
+      email: email,
+      full_name: first_name + ' ' + last_name,
+      login_name: username,
+      must_change_password: false,
+      restricted: false,
+      send_notify: false,
+      source_id: 0,
+      visibility: 'public',
+    }
+    try {
+      return await this.http_service.post(url, body)
+    } catch (error) {
+      throw new ExternalAPIError(
+        error.response.status,
+        error.response.data,
+        error,
+        error.response.data.message
+      )
+    }
+  }
+
   async removeCIWebhook(repo_name: string) {
     await this.getOWner()
     const url = `/repos/${this.owner_name}/${repo_name}/hooks`
