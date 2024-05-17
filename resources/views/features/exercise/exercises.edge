@@ -22,7 +22,7 @@
         <div class="container mt-4">
             <div class="row">
                 @if(exerciseList.length != 0 && exerciseOwnedList.length != 0)
-                <h3>{{t('translate.exercise_breadcrum')}}</h3>
+                <h3>{{t('translate.exercise_text')}}</h3>
                 @endif
                 @each(exercise in exerciseList)
                 <div class="col-md-4">
@@ -45,7 +45,7 @@
                 </div>
                 @end
                 @if(exerciseList.length != 0 && exerciseOwnedList.length != 0)
-                <h3>{{t('translate.exercise_breadcrum')}}</h3>
+                <h3>{{t('translate.exercise_owned_text')}}</h3>
                 @endif
                 @each(exercise in exerciseOwnedList)
                 <div class="col-md-4">

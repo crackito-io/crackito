@@ -4,6 +4,7 @@ import { jwtDecode } from "jwt-decode";
 import { ExercisesRouteSchema } from "../dto/ExercisesRoute.dto.js";
 import { team } from "@prisma/client";
 import { project } from "@prisma/client";
+import logger from "@adonisjs/core/services/logger";
 
 export default class ExercisesController {
   async all(ctx: HttpContext) {
@@ -153,7 +154,6 @@ export default class ExercisesController {
 
   async headerBuilder(currentTeam: team, project: project, leaderboard: object[], ctx: HttpContext, idAccount: number) {
     if (!currentTeam) {
-      console.log(idAccount, project.id_account)
       if (idAccount === project.id_account) {
         return {
           title: project.name,
@@ -165,12 +165,13 @@ export default class ExercisesController {
           repo_name: project.repo_name,
         }
       }
+      logger.info({ tag: '#4411DA' }, 'User not involved in exercise, or not owner of the exercise, redirect to the previous page')
       ctx.session.flash('notifications', {
         type: 'danger',
         title: ctx.i18n.t('translate.error'),
         message: ctx.i18n.t('translate.not_in_exercise_error'),
       })
-      return ctx.response.redirect().back()
+      return
     }
 
     let rankCurrentTeam = leaderboard.findIndex((e) => e.id_team === currentTeam.id_team) + 1
@@ -193,25 +194,39 @@ export default class ExercisesController {
     }
   }
 
-  async details(ctx: HttpContext) {
-    const jwtToken: any = jwtDecode(ctx.request.cookie('jwt'))
-
-    const idAccount = jwtToken.id_account
-
+  async checkConformRequest(ctx: HttpContext, idAccount: number | null) {
     if (idAccount === null) {
+      logger.info({ tag: '#11AADA' }, 'JWT Token idAccount attributes is null, redirect to the previous page')
       ctx.session.flash('notifications', {
         type: 'danger',
         title: ctx.i18n.t('translate.error'),
         message: ctx.i18n.t('translate.unknown_error'),
       })
-      return ctx.response.redirect().back()
+      return false
     }
 
     try {
       await ExercisesRouteSchema.parseAsync(ctx.params)
     } catch (error) {
-      ctx.response.badRequest({ message: 'Params validation failed', error: error })
-      return
+      logger.info({ tag: '#1344F1' }, 'Params are not conform, exercice does not exist, redirect to the previous page')
+      ctx.session.flash('notifications', {
+        type: 'danger',
+        title: ctx.i18n.t('translate.error'),
+        message: ctx.i18n.t('translate.exercise_not_exist_error'),
+      })
+      return false
+    }
+    return true
+  }
+
+  async details(ctx: HttpContext) {
+    const jwtToken: any = jwtDecode(ctx.request.cookie('jwt'))
+
+    const idAccount = jwtToken.id_account
+
+    let conform = await this.checkConformRequest(ctx, idAccount)
+    if (!conform) {
+      return ctx.response.redirect().back()
     }
 
     let project = await this.getLeaderBoard(ctx.params.repo_name)
@@ -219,7 +234,12 @@ export default class ExercisesController {
       e.account_team.find((f) => f.id_account === idAccount)
     )
 
-    ctx.view.share({ ...(await this.headerBuilder(currentTeam, project.project, project.leaderboard, ctx, idAccount)) })
+    let header = await this.headerBuilder(currentTeam, project.project, project.leaderboard, ctx, idAccount)
+    if (!header) {
+      return ctx.response.redirect().back()
+    }
+
+    ctx.view.share({ ...header })
 
     return ctx.view.render('features/exercise/exercise_details', { project_description: project.project.description })
   }
@@ -229,20 +249,9 @@ export default class ExercisesController {
 
     const idAccount = jwtToken.id_account
 
-    if (idAccount === null) {
-      ctx.session.flash('notifications', {
-        type: 'danger',
-        title: ctx.i18n.t('translate.error'),
-        message: ctx.i18n.t('translate.unknown_error'),
-      })
+    let conform = await this.checkConformRequest(ctx, idAccount)
+    if (!conform) {
       return ctx.response.redirect().back()
-    }
-
-    try {
-      await ExercisesRouteSchema.parseAsync(ctx.params)
-    } catch (error) {
-      ctx.response.badRequest({ message: 'Params validation failed', error: error })
-      return
     }
 
     let project = await this.getLeaderBoard(ctx.params.repo_name)
@@ -250,7 +259,12 @@ export default class ExercisesController {
       e.account_team.find((f) => f.id_account === idAccount)
     )
 
-    ctx.view.share({ ...(await this.headerBuilder(currentTeam, project.project, project.leaderboard, ctx, idAccount)) })
+    let header = await this.headerBuilder(currentTeam, project.project, project.leaderboard, ctx, idAccount)
+    if (!header) {
+      return ctx.response.redirect().back()
+    }
+
+    ctx.view.share({ ...header })
 
     // view as project owner
     if (!currentTeam) {
@@ -289,20 +303,9 @@ export default class ExercisesController {
 
     const idAccount = jwtToken.id_account
 
-    if (idAccount === null) {
-      ctx.session.flash('notifications', {
-        type: 'danger',
-        title: ctx.i18n.t('translate.error'),
-        message: ctx.i18n.t('translate.unknown_error'),
-      })
+    let conform = await this.checkConformRequest(ctx, idAccount)
+    if (!conform) {
       return ctx.response.redirect().back()
-    }
-
-    try {
-      await ExercisesRouteSchema.parseAsync(ctx.params)
-    } catch (error) {
-      ctx.response.badRequest({ message: 'Params validation failed', error: error })
-      return
     }
 
     let project = await this.getLeaderBoard(ctx.params.repo_name)
@@ -310,7 +313,12 @@ export default class ExercisesController {
       e.account_team.find((f) => f.id_account === idAccount)
     )
 
-    ctx.view.share({ ...(await this.headerBuilder(currentTeam, project.project, project.leaderboard, ctx, idAccount)) })
+    let header = await this.headerBuilder(currentTeam, project.project, project.leaderboard, ctx, idAccount)
+    if (!header) {
+      return ctx.response.redirect().back()
+    }
+
+    ctx.view.share({ ...header })
 
     return ctx.view.render('features/exercise/exercise_helper')
   }
@@ -320,20 +328,9 @@ export default class ExercisesController {
 
     const idAccount = jwtToken.id_account
 
-    if (idAccount === null) {
-      ctx.session.flash('notifications', {
-        type: 'danger',
-        title: ctx.i18n.t('translate.error'),
-        message: ctx.i18n.t('translate.unknown_error'),
-      })
+    let conform = await this.checkConformRequest(ctx, idAccount)
+    if (!conform) {
       return ctx.response.redirect().back()
-    }
-
-    try {
-      await ExercisesRouteSchema.parseAsync(ctx.params)
-    } catch (error) {
-      ctx.response.badRequest({ message: 'Params validation failed', error: error })
-      return
     }
 
     let project = await this.getLeaderBoard(ctx.params.repo_name)
@@ -341,7 +338,12 @@ export default class ExercisesController {
       e.account_team.find((f) => f.id_account === idAccount)
     )
 
-    ctx.view.share({ ...(await this.headerBuilder(currentTeam, project.project, project.leaderboard, ctx, idAccount)) })
+    let header = await this.headerBuilder(currentTeam, project.project, project.leaderboard, ctx, idAccount)
+    if (!header) {
+      return ctx.response.redirect().back()
+    }
+
+    ctx.view.share({ ...header })
 
     return ctx.view.render('features/exercise/exercise_logs')
   }
