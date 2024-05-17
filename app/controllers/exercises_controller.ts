@@ -232,23 +232,15 @@ export default class ExercisesController {
       return
     }
 
-    const account_exercise = await prisma.account_exercise.findUnique({
-      where: {
-        id_account_id_exercise: {
-          id_account: parseInt(jwtToken.id_account),
-          id_exercise: parseInt(ctx.params['id'])
-        }
-      }
-    })
+    let project = await this.getLeaderBoard(ctx.params.repo_name)
+    let currentTeam = project.teams.find((e) => e.account_team.find((f) => f.id_account == jwtToken.id_account))
 
-    if (account_exercise == null) {
+    if (!currentTeam) {
       ctx.response.badRequest({ message: 'You are trying to access an exercise in which you are not registered'})
       return
     }
 
-    ctx.view.share({
-      ...await this.headerBuilder(account_exercise),
-    })
+    ctx.view.share({ ...(await this.headerBuilder(currentTeam, project.leaderboard, ctx)) })
 
     return ctx.view.render('features/exercise/exercise_helper')
   }
@@ -263,23 +255,16 @@ export default class ExercisesController {
       return
     }
 
-    const account_exercise = await prisma.account_exercise.findUnique({
-      where: {
-        id_account_id_exercise: {
-          id_account: parseInt(jwtToken.id_account),
-          id_exercise: parseInt(ctx.params['id'])
-        }
-      }
-    })
+    let project = await this.getLeaderBoard(ctx.params.repo_name)
+    let currentTeam = project.teams.find((e) => e.account_team.find((f) => f.id_account == jwtToken.id_account))
 
-    if (account_exercise == null) {
+    if (!currentTeam) {
       ctx.response.badRequest({ message: 'You are trying to access an exercise in which you are not registered'})
       return
     }
 
-    ctx.view.share({
-      ...await this.headerBuilder(account_exercise),
-    })
+    ctx.view.share({ ...(await this.headerBuilder(currentTeam, project.leaderboard, ctx)) })
+
 
     return ctx.view.render('features/exercise/exercise_logs')
   }
