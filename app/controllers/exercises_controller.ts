@@ -133,7 +133,7 @@ export default class ExercisesController {
 
         let nbPassedTest = 0
         for (let test of team.test) {
-          if (test.id_step === step.id_step) {
+          if (test.step_name === step.step_name) {
             nbPassedTest += test.status_passed ? 1 : 0
           }
         }
@@ -179,7 +179,7 @@ export default class ExercisesController {
 
     for (let test of currentTeam.test) {
       if (!test.status_passed) {
-        stepNotFinished.add(test.id_step)
+        stepNotFinished.add(test.step_name)
       }
     }
     let totalStepFinished = project.step.length - stepNotFinished.size
@@ -284,7 +284,7 @@ export default class ExercisesController {
         step_tests: [],
       }
       for (let test of currentTeam.test) {
-        if (test.id_step === step.id_step) {
+        if (test.step_name === step.step_name) {
           if (!test.status_passed) {
             data.step_all_tests_passed = false
           }
