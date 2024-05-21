@@ -7,11 +7,12 @@ RUN node ace build --ignore-ts-errors
 WORKDIR /app/build
 RUN npm ci --omit="dev"
 RUN mkdir -p prisma
-RUN pwd && cp ../prisma/schema.prisma prisma/schema.prisma
+COPY ./prisma /app/build/prisma
+COPY ./start.js /app/build/start.js
 RUN npx prisma generate
 
 FROM gcr.io/distroless/nodejs20-debian11:latest
 COPY --from=build-env /app/build /app
 WORKDIR /app
 
-CMD ["bin/server.js"]
+CMD ["start.js"]

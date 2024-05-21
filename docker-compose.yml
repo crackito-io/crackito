@@ -17,7 +17,7 @@ services:
       retries: 10
 
   crackito:
-    image: crackito
+    image: ghcr.io/crackito-io/crackito:dev
     container_name: crackito
     ports:
       - '8080:8080'
@@ -34,7 +34,7 @@ services:
       - .env.gitea
     restart: always
     ports:
-      - "3000:3000"
+      - '3000:3000'
     networks:
       - gitea
     volumes:
@@ -58,7 +58,7 @@ services:
     image: woodpeckerci/woodpecker-server:latest
     restart: always
     ports:
-      - "8000:8000"
+      - '8000:8000'
     volumes:
       - ./data/woodpecker-server-data:/var/lib/woodpecker/
     env_file:
@@ -87,6 +87,3 @@ services:
 networks:
   gitea:
   woodpecker:
-  proxy-net:
-    name: proxy-network
-    external: true
