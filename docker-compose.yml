@@ -1,6 +1,6 @@
 services:
   db-crackito:
-    image: mysql
+    image: mysql:8.4.0
     environment:
       MYSQL_USER: crackito
       MYSQL_PASSWORD: crackito
@@ -17,7 +17,7 @@ services:
       retries: 10
 
   crackito:
-    image: crackito
+    image: ghcr.io/crackito-io/crackito:dev
     container_name: crackito
     ports:
       - '8080:8080'
@@ -34,7 +34,7 @@ services:
       - .env.gitea
     restart: always
     ports:
-      - "3000:3000"
+      - '3000:3000'
     networks:
       - gitea
     volumes:
@@ -55,10 +55,10 @@ services:
 
   woodpecker-server:
     container_name: woodpecker_server
-    image: woodpeckerci/woodpecker-server:latest
+    image: woodpeckerci/woodpecker-server:v2.4.1
     restart: always
     ports:
-      - "8000:8000"
+      - '8000:8000'
     volumes:
       - ./data/woodpecker-server-data:/var/lib/woodpecker/
     env_file:
@@ -69,7 +69,7 @@ services:
 
   woodpecker-agent:
     container_name: woodpecker_agent
-    image: woodpeckerci/woodpecker-agent:latest
+    image: woodpeckerci/woodpecker-agent:v2.4.1
     command: agent
     restart: always
     depends_on:
@@ -87,6 +87,3 @@ services:
 networks:
   gitea:
   woodpecker:
-  proxy-net:
-    name: proxy-network
-    external: true
