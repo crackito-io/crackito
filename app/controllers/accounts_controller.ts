@@ -1,13 +1,14 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import UserDatabaseService from '#services/user_database_service'
+import GitTeaApiService from '#services/gitea_api_service'
 
 import { prisma } from '#config/app'
 import { jwtDecode } from 'jwt-decode'
 import { UserCreateDto, UserCreateSchema } from '../dto/UserCreate.dto.js'
+import { inject } from '@adonisjs/core'
+import { ExternalAPIError } from '#services/custom_error'
 
 export default class AccountsController {
-  userService: UserDatabaseService | undefined
-
   async listAccounts({ view, session, request, response, i18n }: HttpContext) {
     // get jwtToken
     const jwtToken: any = jwtDecode(request.cookie('jwt'))
@@ -42,7 +43,8 @@ export default class AccountsController {
     return view.render('features/admin/new_account')
   }
 
-  async createAccount(ctx: HttpContext) {
+  @inject()
+  async createAccount(ctx: HttpContext, userDatabaseService: UserDatabaseService, gitTeaApiService: GitTeaApiService) {
     // get jwtToken
     const jwtToken: any = jwtDecode(ctx.request.cookie('jwt'))
 
@@ -64,11 +66,39 @@ export default class AccountsController {
       return
     }
 
-    this.userService = UserDatabaseService.getInstance(idOrganization)
-
     let body = ctx.request.body()
-    const [code, message, title, user] = await this.userService.createUser(body.email, body.password, body.confirmPassword, body.firstname, body.lastname)
+    let [code, message, title, user] = await userDatabaseService.createUser(
+      idOrganization,
+      body.email,
+      body.password,
+      body.firstname,
+      body.lastname
+    )
 
-    return ctx.response.status(code).send({status_code: code, status_message: ctx.i18n.t(`translate.${message}`), title: ctx.i18n.t(`translate.${title}`), user: user})
+    if (code === 200 && user) {
+      try {
+        gitTeaApiService.createUser(
+          user.username,
+          user.password,
+          user.email_address,
+          user.Firstname,
+          user.Lastname
+        )
+      } catch (error) {
+        if (error instanceof ExternalAPIError) {
+          code = error.status
+          message = error.getPrintableErrorMessage(ctx.i18n)
+          title = 'error'
+          user = null
+        }
+      }
+    }
+
+    return ctx.response.status(code).send({
+      status_code: code,
+      status_message: ctx.i18n.t(`translate.${message}`),
+      title: ctx.i18n.t(`translate.${title}`),
+      user: user,
+    })
   }
 }

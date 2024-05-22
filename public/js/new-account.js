@@ -40,7 +40,7 @@ form.addEventListener('reset', function () {
   reset_bouncer()
 })
 
-let passwordField = document.getElementById('password');
+let passwordField = document.getElementById('password')
 
 passwordField.addEventListener('input', function () {
   // re evaluate confirm password after password field modification
@@ -93,7 +93,7 @@ document.addEventListener('bouncerFormValid', function (e) {
           document.getElementById('progress-create-user-outer').style.display = 'flex'
           document.getElementById('progress-create-user-inner').classList.add('bg-success')
           document.getElementById('progress-create-user-inner').classList.remove('bg-danger')
-            setTimeout(() => {
+          setTimeout(() => {
             document.getElementById('progress-create-user-inner').classList.add('loading')
           }, 0)
           setTimeout(() => {

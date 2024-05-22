@@ -18,7 +18,7 @@ export type GiteaProtectedBranch = {
   files: Array<string>
 }
 
-export class GiteaApiService {
+export default class GiteaApiService {
   private owner_name: string = ''
   private http_service: HttpService = new HttpService(`${env.get('GITEA_URL')}/api/v1`, {
     Authorization: `Bearer ${env.get('GITEA_TOKEN')}`,

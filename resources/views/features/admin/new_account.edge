@@ -70,7 +70,7 @@
                       <div class="mb-3">
                         <label class="form-label">{{ t('translate.new_user_form_label_password') }}:</label>
                         <div class="input-group search-form">
-                          <input type="password" name="password" id="password" data-bouncer-target="#password-error" class="form-control" placeholder="{{ t('translate.new_user_form_placeholder_password') }}"  required="">
+                          <input type="password" name="password" id="password" data-bouncer-target="#password-error" class="form-control" placeholder="{{ t('translate.new_user_form_placeholder_password') }}" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$"  required="">
                           <span class="input-group-text bg-transparent"><i class="feather icon-lock"></i></span>
                         </div>
                         <small class="form-text text-muted">{{ t('translate.new_user_form_hint_password') }}</small>

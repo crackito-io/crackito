@@ -1,25 +1,8 @@
 import { prisma } from '#config/app'
 import bcrypt from 'bcrypt'
+import { account } from '@prisma/client'
 
 export default class UserDatabaseService {
-  static instances: { [key: number]: UserDatabaseService }
-  userIdOrganization: number
-
-  constructor(userIdOrganization: number) {
-    this.userIdOrganization = userIdOrganization
-  }
-
-  static getInstance(idOrganization: number) {
-    if (UserDatabaseService.instances === undefined) {
-      UserDatabaseService.instances = {}
-      UserDatabaseService.instances[idOrganization] = new UserDatabaseService(idOrganization)
-    } else if (!(idOrganization in UserDatabaseService.instances)) {
-      UserDatabaseService.instances[idOrganization] = new UserDatabaseService(idOrganization)
-    }
-
-    return UserDatabaseService.instances[idOrganization]
-  }
-
   async getUserFromId(id_account: number) {
     const user = await prisma.account.findFirst({
       where: {
@@ -30,15 +13,35 @@ export default class UserDatabaseService {
     return user
   }
 
-  async createUser(email_address: string, password: string, confirmPassword: string, firstname: string, lastname: string): Promise<[number, string, string, object | null]> {
+  async usernameAlreadyExists(username: string) {
+    const user = await prisma.account.findFirst({
+      where: {
+        username: username,
+      },
+    })
+
+    return user
+  }
+
+  async createUser(currentUserOrganizationId: number, email_address: string, password: string, firstname: string, lastname: string): Promise<[number, string, string, account | null]> {
+    let usernameNumber = 1
+    let username = firstname.toLowerCase() + lastname.toLowerCase()
+
+    while (await this.usernameAlreadyExists(username+usernameNumber)) {
+      usernameNumber++
+    }
+
+    username = username + usernameNumber
+
     // create user in database
-    let user = await prisma.account.create({
+    let user: account = await prisma.account.create({
       data: {
         email_address: email_address,
         password: bcrypt.hashSync(password, bcrypt.genSaltSync(10)),
         Firstname: firstname,
         Lastname: lastname,
-        id_organization: this.userIdOrganization,
+        id_organization: currentUserOrganizationId,
+        username: username,
       },
     })
 
