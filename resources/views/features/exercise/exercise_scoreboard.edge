@@ -1,128 +1,96 @@
 @component('components/layouts/exercise')
-
 @slot('main')
+<!-- [ Complete error Pop-up ] start -->
+<div class="modal fade" id="complete-error" tabindex="-1" aria-labelledby="complete-error-label" style="display: none;" aria-modal="true" role="dialog">
+  <div class="modal-dialog modal-fullscreen">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title h4" id="complete-error-label">{{ t('translate.complete_error_popup_text') }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <pre id="complete-error-content"></pre>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ t('translate.complete_error_popup_close_button') }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- [ Complete error Pop-up ] end -->
 <div class="row">
-    <div class="col-xl-6 col-md-12">
+    <div class="col-xl-{{ userProgress ? '6' : '12' }} col-md-12">
         <div class="card new-cust-card">
             <div class="card-header">
-                <h5>Scorebord</h5>
+                <h5>{{ t('translate.title_scoreboard') }}</h5>
             </div>
-            <div class="customer-scroll" style=" position: relative; padding-bottom: 20px; height: 600px;">
+            <div class="customer-scroll" style="position: relative; padding-bottom: 20px; height: 600px;">
                 <div class="card-body p-b-0">
-                    <div class="align-middle m-b-25">
-                        <img src="https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=Max&backgroundColor=ecad80,b6e3f4,c0aede,d1d4f9,ffd5dc,f2d3b1,ffdfbf&backgroundType=gradientLinear"
-                            alt="user image" class="img-radius align-top m-r-15" />
-                        <div class="d-inline-block">
-                            <h5><span class="badge bg-dark">1er</span></h5>
-                            <h5 class="m-b-0">Alex Thompson</h5>
-                            <span class="status deactive">6/6 Steps</span>
-                        </div>
+                  @each((team, index) in project_leaderboard)
+                  <div class="align-middle m-b-25">
+                    @each((member, index) in team.teamMembers)
+                    <img style="{{ index != 0 ? 'position:absolute;left:0;top:10px' : '' }}" src="https://api.dicebear.com/7.x/adventurer-neutral/svg?seed={{ member }}&backgroundColor=ecad80,b6e3f4,c0aede,d1d4f9,ffd5dc,f2d3b1,ffdfbf&backgroundType=gradientLinear"
+                        alt="user image" class="img-radius align-top m-r-15" />
+                    @endeach
+                    <div class="d-inline-block">
+                        <h5><span class="badge bg-dark">{{ index + 1 }}{{ index + 1 == 1 ? t('translate.first') : (index + 1 == 2 ? t('translate.second') : (index + 1 == 3 ? t('translate.third') : t('translate.other_rank'))) }}</span></h5>
+                        <h5 class="m-b-0">{{ team.teamMembers }}</h5>
+
+                        <span class="status deactive w-25">{{ team.gainedPoint }}/{{ team.maxPoint }} {{ t('translate.points_text') }}
+                          <div class="progress {{ team.percentFinished < 25 ? 'bg-danger-subtle' : (team.percentFinished < 50 ? 'bg-warning-subtle' : (team.percentFinished < 75 ? 'bg-info-subtle' : 'bg-success-subtle')) }}">
+                            <div class="progress-bar {{ team.percentFinished < 25 ? 'bg-danger' : (team.percentFinished < 50 ? 'bg-warning' : (team.percentFinished < 75 ? 'bg-info' : 'bg-success')) }} progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="{{ team.percentFinished }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ team.percentFinished }}%"></div>
+                          </div>
+                        </span>
                     </div>
-                    <div class="align-middle m-b-25">
-                        <img src="https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=Max&backgroundColor=ecad80,b6e3f4,c0aede,d1d4f9,ffd5dc,f2d3b1,ffdfbf&backgroundType=gradientLinear"
-                            alt="user image" class="img-radius align-top m-r-15" />
-                        <div class="d-inline-block">
-                            <h5><span class="badge bg-primary">2ième</span></h5>
-                            <h5 class="m-b-0">Alex Thompson</h5>
-                            <span class="status deactive">6/6 Steps</span>
-                        </div>
-                    </div>
-                    <div class="align-middle m-b-25">
-                        <img src="https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=Max&backgroundColor=ecad80,b6e3f4,c0aede,d1d4f9,ffd5dc,f2d3b1,ffdfbf&backgroundType=gradientLinear"
-                            alt="user image" class="img-radius align-top m-r-15" />
-                        <div class="d-inline-block">
-                            <h5><span class="badge bg-dark">3ième</span></h5>
-                            <h5 class="m-b-0">Alex Thompson</h5>
-                            <span class="status deactive">6/6 Steps</span>
-                        </div>
-                    </div>
-                    <div class="align-middle m-b-25">
-                        <img src="https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=Max&backgroundColor=ecad80,b6e3f4,c0aede,d1d4f9,ffd5dc,f2d3b1,ffdfbf&backgroundType=gradientLinear"
-                            alt="user image" class="img-radius align-top m-r-15" />
-                        <div class="d-inline-block">
-                            <h5><span class="badge bg-dark">5ième</span></h5>
-                            <h5 class="m-b-0">Alex Thompson</h5>
-                            <span class="status deactive">6/6 Steps</span>
-                        </div>
-                    </div>
-                    <div class="align-middle m-b-25">
-                        <img src="https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=Max&backgroundColor=ecad80,b6e3f4,c0aede,d1d4f9,ffd5dc,f2d3b1,ffdfbf&backgroundType=gradientLinear"
-                            alt="user image" class="img-radius align-top m-r-15" />
-                        <div class="d-inline-block">
-                            <h5><span class="badge bg-dark">6ième</span></h5>
-                            <h5 class="m-b-0">Alex Thompson</h5>
-                            <span class="status deactive">6/6 Steps</span>
-                        </div>
-                    </div>
-                    <div class="align-middle m-b-25">
-                        <img src="https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=Max&backgroundColor=ecad80,b6e3f4,c0aede,d1d4f9,ffd5dc,f2d3b1,ffdfbf&backgroundType=gradientLinear"
-                            alt="user image" class="img-radius align-top m-r-15" />
-                        <div class="d-inline-block">
-                            <h5><span class="badge bg-dark">7ième</span></h5>
-                            <h5 class="m-b-0">Alex Thompson</h5>
-                            <span class="status deactive">6/6 Steps</span>
-                        </div>
-                    </div>
-                    <div class="align-middle m-b-25">
-                        <img src="https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=Max&backgroundColor=ecad80,b6e3f4,c0aede,d1d4f9,ffd5dc,f2d3b1,ffdfbf&backgroundType=gradientLinear"
-                            alt="user image" class="img-radius align-top m-r-15" />
-                        <div class="d-inline-block">
-                            <h5><span class="badge bg-dark">8ième</span></h5>
-                            <h5 class="m-b-0">Alex Thompson</h5>
-                            <span class="status deactive">6/6 Steps</span>
-                        </div>
-                    </div>
-                    <div class="align-middle m-b-0">
-                        <img src="https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=Max&backgroundColor=ecad80,b6e3f4,c0aede,d1d4f9,ffd5dc,f2d3b1,ffdfbf&backgroundType=gradientLinear"
-                            alt="user image" class="img-radius align-top m-r-15" />
-                        <div class="d-inline-block">
-                            <h5><span class="badge bg-dark">9ième</span></h5>
-                            <h5 class="m-b-0">Alex Thompson</h5>
-                            <span class="status deactive">6/6 Steps</span>
-                        </div>
-                    </div>
+                  </div>
+                  @endeach
                 </div>
             </div>
         </div>
     </div>
-
+    @if(userProgress)
     <div class="col-xl-6 col-md-12">
         <div class="card task-card">
             <div class="card-header d-flex align-items-center justify-content-between">
-                <h5>Your progress</h5>
+                <h5>{{ t('translate.title_progress') }}</h5>
             </div>
             <div class="card-body">
                 <ul class="list-unstyled task-list">
-                    <li>
-                        <i class="feather icon-check f-w-600 task-icon bg-success"></i>
-                        <h5 class="text-muted">Exercise 1</h5>
-                        <p>Création du premier TDD</p>
-                    </li>
-                    <li>
-                        <i class="task-icon bg-primary"></i>
-                        <h5 class="text-muted">Exercise 2</h5>
-                        <p>Ajout de la classe Téléphone</p>
-                    </li>
-                    <li>
-                        <i class="task-icon bg-danger"></i>
-                        <h5 class="text-muted">Exercise 3</h5>
-                        <p>Création du comparateur</p>
-                    </li>
-                    <li>
-                        <i class="task-icon bg-danger"></i>
-                        <h5 class="text-muted">Exercise 4</h5>
-                        <p>Implémentation du comparateur V2</p>
-                    </li>
-                    <li class="p-b-15 m-b-10">
-                        <i class="task-icon bg-danger"></i>
-                        <h5 class="text-muted">Exercise 5</h5>
-                        <p>Fichier executable</p>
-                    </li>
+                  @each(progress in userProgress)
+                  <li>
+                    @if(progress.step_all_tests_passed)
+                    <i class="feather icon-check f-w-600 task-icon bg-success"></i>
+                    @else
+                    <i class="task-icon bg-danger"></i>
+                    @endif
+                    <h5 class="text-muted">{{ progress.step_title }} ({{ progress.step_test_number }} {{ t('translate.test_to_pass_text') }})</h5>
+                    <p>{{ progress.step_description }}</p>
+                    <ul class="list-unstyled rounded-10">
+                      <div class="list-group">
+                        @each(test in progress.step_tests)
+                        <li class="list-group-item list-group-item-{{ test.passed ? 'success' : 'danger' }} mb-0 p-2 d-flex justify-content-between align-items-center">
+                          <span class="fw-bold">{{ test.name }}</span> {{ test.message }}
+                          @unless(test.passed)
+                          @let(detailed_message = test.detailed_message.replace(/\n/g, '<br>'))
+                          <button onclick="completeErrorPopUp('{{ detailed_message }}')" class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#complete-error">{{ t('translate.complete_error_button') }}</button>
+                          @endunless
+                        </li>
+                        @endeach
+                      </div>
+                    </ul>
+                  </li>
+                  @endeach
+
                 </ul>
             </div>
         </div>
     </div>
+    @endif
 </div>
+<script>
+function completeErrorPopUp(content) {
+  document.getElementById('complete-error-content').innerHTML = content
+}
+</script>
 @end
-
 @end
