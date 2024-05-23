@@ -67,30 +67,52 @@ export default class AccountsController {
     }
 
     let body = ctx.request.body()
+
+    let usernameNumber = 1
+    let username = body.firstname.toLowerCase() + body.lastname.toLowerCase()
+
+    while (await userDatabaseService.usernameAlreadyExists(username + usernameNumber)) {
+      usernameNumber++
+    }
+
+    username = username + usernameNumber
+
+    try {
+      await gitTeaApiService.createUser(
+        username,
+        body.password,
+        body.email,
+        body.firstname,
+        body.lastname
+      )
+    } catch (error) {
+      if (error instanceof ExternalAPIError) {
+        ctx.logger.info({ tag: '#0982DD' }, `Gitea error after creating a user : ${JSON.stringify(error)}`)
+        return ctx.response.status(error.status).send({
+          status_code: error.status,
+          status_message: error.getPrintableErrorMessage(ctx.i18n),
+          title: ctx.i18n.t('translate.error'),
+          user: null,
+        })
+      }
+    }
+
     let [code, message, title, user] = await userDatabaseService.createUser(
       idOrganization,
       body.email,
       body.password,
       body.firstname,
-      body.lastname
+      body.lastname,
+      username
     )
 
-    if (code === 200 && user) {
+    if (code === 500) {
+      ctx.logger.info({ tag: '#0D822D' }, 'Database error after creating a user')
       try {
-        gitTeaApiService.createUser(
-          user.username,
-          user.password,
-          user.email_address,
-          user.Firstname,
-          user.Lastname
-        )
-      } catch (error) {
-        if (error instanceof ExternalAPIError) {
-          code = error.status
-          message = error.getPrintableErrorMessage(ctx.i18n)
-          title = 'error'
-          user = null
-        }
+        await gitTeaApiService.deleteUser(username)
+      } catch (error2) {
+        ctx.logger.info({ tag: '#10DDDD' }, `Gitea error after removing a user (you have to manually remove the user) : ${JSON.stringify(error2)}`)
+        // we do not response the page with gitea error because it's a 500 error
       }
     }
 

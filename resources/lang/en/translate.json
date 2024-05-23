@@ -48,6 +48,7 @@
     "bug_notification_title":"Notification",
     "bug_notification_message": "Notification message has not been received",
 
+    "internal_server_error": "Internal server error...",
     "error":"Error!",
     "success":"Success!",
     "unknown_error":"An unknown error occured while the page was loading",

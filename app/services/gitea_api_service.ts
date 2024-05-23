@@ -83,6 +83,20 @@ export default class GiteaApiService {
     return membersRepo
   }
 
+  async deleteUser(username: string) {
+    const url = `/admin/users/${username}`
+    try {
+      await this.http_service.delete(url)
+    } catch (error) {
+      throw new ExternalAPIError(
+        error.response.status,
+        error.response.data,
+        error,
+        error.response.data.message
+      )
+    }
+  }
+
   async createUser(
     username: string,
     password: string,
