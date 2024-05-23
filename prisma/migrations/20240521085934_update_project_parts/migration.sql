@@ -5,9 +5,6 @@ ALTER TABLE `account_exercise` DROP FOREIGN KEY `account_exercise_ibfk_1`;
 ALTER TABLE `account_exercise` DROP FOREIGN KEY `account_exercise_ibfk_2`;
 
 -- DropForeignKey
-ALTER TABLE `account_role` DROP FOREIGN KEY `account_role_ibfk_1`;
-
--- DropForeignKey
 ALTER TABLE `account_step` DROP FOREIGN KEY `account_step_ibfk_1`;
 
 -- DropForeignKey
@@ -57,7 +54,7 @@ CREATE TABLE `project` (
     `status_open` BOOLEAN NOT NULL,
     `webhook_secret` VARCHAR(50) NULL,
     `end_time` DATETIME(0) NULL,
-    `id_account` INTEGER NOT NULL,
+    `id_account` INTEGER,
 
     INDEX `id_account`(`id_account`),
     PRIMARY KEY (`repo_name`)
@@ -98,22 +95,19 @@ CREATE UNIQUE INDEX `username` ON `account`(`username`);
 CREATE INDEX `id_organization` ON `federation`(`id_organization`);
 
 -- AddForeignKey
-ALTER TABLE `account_role` ADD CONSTRAINT `account_role_ibfk_1` FOREIGN KEY (`id_account`) REFERENCES `account`(`id_account`) ON DELETE NO ACTION ON UPDATE NO ACTION;
-
--- AddForeignKey
 ALTER TABLE `federation` ADD CONSTRAINT `federation_ibfk_1` FOREIGN KEY (`id_organization`) REFERENCES `organization`(`id_organization`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE `step` ADD CONSTRAINT `step_ibfk_1` FOREIGN KEY (`repo_name`) REFERENCES `project`(`repo_name`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE `account_team` ADD CONSTRAINT `account_team_ibfk_1` FOREIGN KEY (`id_account`) REFERENCES `account`(`id_account`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE `account_team` ADD CONSTRAINT `account_team_ibfk_1` FOREIGN KEY (`id_account`) REFERENCES `account`(`id_account`) ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE `account_team` ADD CONSTRAINT `account_team_ibfk_2` FOREIGN KEY (`id_team`) REFERENCES `team`(`id_team`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE `project` ADD CONSTRAINT `project_ibfk_1` FOREIGN KEY (`id_account`) REFERENCES `account`(`id_account`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE `project` ADD CONSTRAINT `project_ibfk_1` FOREIGN KEY (`id_account`) REFERENCES `account`(`id_account`) ON DELETE SET NULL ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE `team` ADD CONSTRAINT `team_ibfk_1` FOREIGN KEY (`repo_name`) REFERENCES `project`(`repo_name`) ON DELETE NO ACTION ON UPDATE NO ACTION;
