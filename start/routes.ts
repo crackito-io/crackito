@@ -27,11 +27,11 @@ router
     })
 
     router.get('/exercises', [ExercisesController, 'all'])
-    router.on('/exercises/:id').redirect('/exercises/:id/details')
-    router.get('/exercises/:id/details', [ExercisesController, 'details'])
-    router.get('/exercises/:id/scoreboard', [ExercisesController, 'scoreboard'])
-    router.get('/exercises/:id/helper', [ExercisesController, 'helper'])
-    router.get('/exercises/:id/logs', [ExercisesController, 'logs'])
+    router.on('/exercises/:repo_name').redirect('/exercises/:repo_name/details')
+    router.get('/exercises/:repo_name/details', [ExercisesController, 'details'])
+    router.get('/exercises/:repo_name/scoreboard', [ExercisesController, 'scoreboard'])
+    router.get('/exercises/:repo_name/helper', [ExercisesController, 'helper'])
+    router.get('/exercises/:repo_name/logs', [ExercisesController, 'logs'])
 
     router.get('/servers', async ({ view }) => {
       return view.render('features/servers/servers')
@@ -66,6 +66,18 @@ router
     router
       .get('/accounts', [AccountsController, 'listAccounts'])
       .use(middleware.permissions(['view_users']))
+
+    router
+      .group(() => {
+        router
+          .delete('/accounts/:id', [AccountsController, 'deleteAccount'])
+          .where('id', {
+            match: /^[0-9]+$/,
+            cast: (value) => Number(value),
+          })
+          .use(middleware.permissions(['delete_users']))
+      })
+      .prefix('/api')
   })
   .prefix('/admin')
   .use([middleware.auth()])

@@ -1,7 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
-import jwt from 'jsonwebtoken';
-import { jwtDecode } from "jwt-decode";
+import jwt from 'jsonwebtoken'
+import { jwtDecode } from 'jwt-decode'
 import env from '#start/env'
 
 export default class AuthMiddleware {
@@ -37,13 +37,13 @@ export default class AuthMiddleware {
       return
     }
 
-    const decoded : any = jwtDecode(jwtToken);
+    const decoded: any = jwtDecode(jwtToken)
 
     view.share({
       firstname: decoded.firstname,
       lastname: decoded.lastname,
       email: decoded.email_address,
-      version: process.env.VERSION
+      version: process.env.VERSION,
     })
 
     const output = await next()

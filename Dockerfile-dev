@@ -1,0 +1,18 @@
+FROM node:21.7.2 AS build-env
+WORKDIR /app
+COPY . /app
+
+RUN npm install
+RUN node ace build --ignore-ts-errors
+WORKDIR /app/build
+RUN npm ci --omit="dev"
+RUN mkdir -p prisma
+COPY ./prisma /app/build/prisma
+COPY ./start.js /app/build/start.js
+RUN npx prisma generate
+
+FROM gcr.io/distroless/nodejs20-debian11:latest
+COPY --from=build-env /app/build /app
+WORKDIR /app
+
+CMD ["start.js"]

@@ -123,4 +123,29 @@ export default class AccountsController {
       user: user,
     })
   }
+
+  @inject()
+  async deleteAccount(ctx: HttpContext, userDatabaseService: UserDatabaseService) {
+    // get jwtToken
+    const jwtToken: any = jwtDecode(ctx.request.cookie('jwt'))
+
+    // get current user organization id
+    const idOrganization = jwtToken.id_organization
+
+    if (idOrganization === null) {
+      ctx.logger.info({ tag: '#F123FA' }, `JWT Token idOrganization attributes is null, sending 401 to the current page`)
+      return ctx.response.status(401).send({status_code: 401, status_message: ctx.i18n.t('translate.unknown_error'), title: ctx.i18n.t('translate.error')})
+    }
+
+    // get current user id
+    const idAccount = jwtToken.id_account
+
+    if (idAccount === null) {
+      ctx.logger.info({ tag: '#0F89FF' }, `JWT Token idAccount attributes is null, sending 401 to the current page`)
+      return ctx.response.status(401).send({status_code: 401, status_message: ctx.i18n.t('translate.unknown_error'), title: ctx.i18n.t('translate.error')})
+    }
+
+    const [code, message, title] = await userDatabaseService.deleteUser(idAccount, idOrganization, ctx.params.id)
+    return ctx.response.status(code).send({status_code: code, status_message: ctx.i18n.t(`translate.${message}`), title: ctx.i18n.t(`translate.${title}`)})
+  }
 }

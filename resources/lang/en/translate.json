@@ -99,5 +99,67 @@
     "user_create_field_not_valid":"One or multiple fields are not valid",
     "user_create_done_success":"The user has been successfully created",
 
-    "mail_already_taken":"The mail is already set to another user"
+    "mail_already_taken":"The mail is already set to another user",
+    "delete_button":"Delete",
+
+    "delete_confirmation_text":"Are you sure you want to delete this account ?",
+    "delete_confirmation_button":"Delete permanently",
+    "cancel":"Cancel",
+    "delete":"Delete",
+
+    "user_not_found_on_delete_error":"You can't delete a non existing user",
+    "user_not_in_organization_on_delete_error":"You can't delete a user not in your organization",
+    "user_your_self":"You can't delete yourself",
+    "user_delete_done_success":"The user is now deleted",
+
+    "server_error":"Internal servor error happened",
+
+    "join_exercice":"Join",
+    "show_exercice":"Show",
+    "status_closed": "Closed",
+    "status_open": "Open",
+    "status_finished": "Finished",
+    "status_inprogress": "In progress",
+
+    "nav_exercise_exercise":"Exercise",
+    "nav_exercise_scoreboard":"Scoreboard",
+    "nav_exercise_helper":"Helper",
+    "nav_exercise_logs":"Logs",
+
+    "exercise_breadcrum": "Exercices",
+
+    "rank_label": "in your group",
+    "lastcommit_label": "last commit",
+    "steps_label": "steps",
+    "status_label": "exercise status",
+
+    "seconds":"second(s)",
+    "minutes":"minute(s)",
+    "hours":"hour(s)",
+
+    "first":"st",
+    "second":"nd",
+    "third":"rd",
+    "other_rank":"th",
+
+    "rank_text":"rank",
+    "last_commit_ago_text":"ago",
+    "finished_steps_text":"finished",
+
+    "complete_error_popup_close_button":"Close",
+    "complete_error_popup_text":"Complete error",
+    "complete_error_button":"Watch complete error",
+
+    "title_progress":"Your progress",
+    "title_scoreboard":"Scoreboard",
+
+    "test_to_pass_text":"tests to pass",
+    "points_text":"points",
+
+    "not_in_exercise_error":"You don't have access to see that exercice",
+
+    "exercise_not_exist_error":"The exercise you look for doesn't exist !",
+
+    "exercise_text":"Exercices you are involved in",
+    "exercise_owned_text":"Exercices you own"
 }

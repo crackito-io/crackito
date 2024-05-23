@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-1.1.x"]
 }
 
 datasource db {
@@ -10,32 +11,20 @@ datasource db {
 
 model account {
   id_account         Int                  @id @default(autoincrement())
-  email_address      String?              @unique(map: "Account_UN") @db.VarChar(255)
+  email_address      String?              @unique(map: "email_address") @db.VarChar(255)
   password           String?              @db.VarChar(255)
   Firstname          String?              @db.VarChar(50)
   Lastname           String?              @db.VarChar(50)
   id_organization    Int
+  username           String               @unique(map: "username") @db.VarChar(50)
   organization       organization         @relation(fields: [id_organization], references: [id_organization], onDelete: NoAction, onUpdate: NoAction, map: "account_ibfk_1")
-  account_exercise   account_exercise[]
   account_role       account_role[]
-  account_step       account_step[]
+  account_team       account_team[]
   federation_account federation_account[]
   notification       notification[]
+  project            project[]
 
   @@index([id_organization], map: "id_organization")
-}
-
-model account_exercise {
-  id_account  Int
-  id_exercise Int
-  repo_name   String?  @db.VarChar(255)
-  archived    Boolean
-  join_date   DateTime @db.DateTime(0)
-  account     account  @relation(fields: [id_account], references: [id_account], onDelete: NoAction, onUpdate: NoAction, map: "account_exercise_ibfk_1")
-  exercise    exercise @relation(fields: [id_exercise], references: [id_exercise], onDelete: NoAction, onUpdate: NoAction, map: "account_exercise_ibfk_2")
-
-  @@id([id_account, id_exercise])
-  @@index([id_exercise], map: "id_exercise")
 }
 
 model account_role {
@@ -48,32 +37,14 @@ model account_role {
   @@index([id_role], map: "id_role")
 }
 
-model account_step {
-  id_account  Int
-  id_exercise Int
-  num_order   Int      @db.TinyInt
-  last_status String?  @db.VarChar(50)
-  is_done     Boolean?
-  account     account  @relation(fields: [id_account], references: [id_account], onDelete: NoAction, onUpdate: NoAction, map: "account_step_ibfk_1")
-  step        step     @relation(fields: [id_exercise, num_order], references: [id_exercise, num_order], onDelete: NoAction, onUpdate: NoAction, map: "account_step_ibfk_2")
-
-  @@id([id_account, id_exercise, num_order])
-  @@index([id_exercise, num_order], map: "id_exercise")
-}
-
-model exercise {
-  id_exercise      Int                @id @default(autoincrement())
-  title            String?            @db.VarChar(50)
-  description      String?            @db.VarChar(255)
-  repo_name        String?            @db.VarChar(255)
-  account_exercise account_exercise[]
-  step             step[]
-}
-
 model federation {
   id_federation      Int                  @id @default(autoincrement())
   federation_name    String               @db.VarChar(50)
+  id_organization    Int
+  organization       organization         @relation(fields: [id_organization], references: [id_organization], onDelete: NoAction, onUpdate: NoAction, map: "federation_ibfk_1")
   federation_account federation_account[]
+
+  @@index([id_organization], map: "id_organization")
 }
 
 model federation_account {
@@ -104,6 +75,7 @@ model organization {
   id_organization   Int                 @id @default(autoincrement())
   name              String?             @db.VarChar(100)
   account           account[]
+  federation        federation[]
   organization_role organization_role[]
 }
 
@@ -142,12 +114,69 @@ model role_permission {
 }
 
 model step {
-  id_exercise  Int
-  num_order    Int            @db.TinyInt
-  title        String?        @db.VarChar(50)
-  description  String?        @db.VarChar(255)
-  account_step account_step[]
-  exercise     exercise       @relation(fields: [id_exercise], references: [id_exercise], onDelete: NoAction, onUpdate: NoAction, map: "step_ibfk_1")
+  num_order   Int?    @db.TinyInt
+  title       String? @db.VarChar(50)
+  description String? @db.VarChar(255)
+  step_name   String  @db.VarChar(50)
+  repo_name   String  @db.VarChar(255)
+  test_number Int?
+  project     project @relation(fields: [repo_name], references: [repo_name], onDelete: NoAction, onUpdate: NoAction, map: "step_ibfk_1")
+  test        test[]
 
-  @@id([id_exercise, num_order])
+  @@id([repo_name, step_name])
+}
+
+model account_team {
+  id_account Int
+  id_team    Int
+  account    account @relation(fields: [id_account], references: [id_account], onDelete: NoAction, onUpdate: NoAction, map: "account_team_ibfk_1")
+  team       team    @relation(fields: [id_team], references: [id_team], onDelete: NoAction, onUpdate: NoAction, map: "account_team_ibfk_2")
+
+  @@id([id_account, id_team])
+  @@index([id_team], map: "id_team")
+}
+
+model project {
+  repo_name      String    @id @db.VarChar(255)
+  name           String?   @db.VarChar(50)
+  description    String?   @db.VarChar(255)
+  status_open    Boolean
+  webhook_secret String?   @db.VarChar(50)
+  end_time       DateTime? @db.DateTime(0)
+  id_account     Int
+  account        account   @relation(fields: [id_account], references: [id_account], onDelete: NoAction, onUpdate: NoAction, map: "project_ibfk_1")
+  step           step[]
+  team           team[]
+
+  @@index([id_account], map: "id_account")
+}
+
+model team {
+  id_team                 Int            @id @default(autoincrement())
+  team_repo_name          String?        @db.VarChar(50)
+  last_commit             DateTime?      @db.DateTime(0)
+  repo_name               String         @db.VarChar(255)
+  join_project_at         DateTime?      @db.DateTime(0)
+  status_project_finished Boolean?
+  finish_project_at       DateTime?      @db.DateTime(0)
+  account_team            account_team[]
+  project                 project        @relation(fields: [repo_name], references: [repo_name], onDelete: NoAction, onUpdate: NoAction, map: "team_ibfk_1")
+  test                    test[]
+
+  @@index([repo_name], map: "repo_name")
+}
+
+model test {
+  id_team          Int
+  repo_name        String   @db.VarChar(255)
+  step_name        String   @db.VarChar(50)
+  test_name        String   @db.VarChar(50)
+  status_passed    Boolean?
+  message          String?  @db.VarChar(50)
+  detailed_message String?  @db.VarChar(2500)
+  team             team     @relation(fields: [id_team], references: [id_team], onDelete: NoAction, onUpdate: NoAction, map: "test_ibfk_1")
+  step             step     @relation(fields: [repo_name, step_name], references: [repo_name, step_name], onDelete: NoAction, onUpdate: NoAction, map: "test_ibfk_2")
+
+  @@id([id_team, repo_name, step_name, test_name])
+  @@index([repo_name, step_name], map: "repo_name")
 }
