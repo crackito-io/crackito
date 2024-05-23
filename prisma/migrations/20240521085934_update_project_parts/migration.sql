@@ -52,7 +52,6 @@ CREATE TABLE `project` (
     `name` VARCHAR(50) NULL,
     `description` VARCHAR(255) NULL,
     `status_open` BOOLEAN NOT NULL,
-    `webhook_secret` VARCHAR(50) NULL,
     `end_time` DATETIME(0) NULL,
     `id_account` INTEGER,
 
@@ -69,6 +68,7 @@ CREATE TABLE `team` (
     `join_project_at` DATETIME(0) NULL,
     `status_project_finished` BOOLEAN NULL,
     `finish_project_at` DATETIME(0) DEFAULT NULL,
+    `webhook_secret` VARCHAR(100) NULL,
 
     INDEX `repo_name`(`repo_name`),
     PRIMARY KEY (`id_team`)
