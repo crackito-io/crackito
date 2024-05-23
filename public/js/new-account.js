@@ -108,22 +108,3 @@ document.addEventListener('bouncerFormValid', function (e) {
   },
   false
 )
-
-async function createAccountXHR(email, password, confirmPassword, firstname, lastname) {
-  return fetch(`http://localhost:3333/admin/accounts/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Requested-With': 'xmlhttprequest',
-    },
-    body: JSON.stringify({
-      email: email,
-      password: password,
-      confirmPassword: confirmPassword,
-      firstname: firstname,
-      lastname: lastname,
-    }),
-  }).then((response) => {
-    return response.json()
-  })
-}

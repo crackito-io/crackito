@@ -30,7 +30,7 @@ model account {
 model account_role {
   id_account Int
   id_role    Int
-  account    account @relation(fields: [id_account], references: [id_account], onDelete: NoAction, onUpdate: NoAction, map: "account_role_ibfk_1")
+  account    account @relation(fields: [id_account], references: [id_account], onDelete: Cascade, onUpdate: NoAction, map: "account_role_ibfk_1")
   role       role    @relation(fields: [id_role], references: [id_role], onDelete: NoAction, onUpdate: NoAction, map: "account_role_ibfk_2")
 
   @@id([id_account, id_role])
@@ -129,7 +129,7 @@ model step {
 model account_team {
   id_account Int
   id_team    Int
-  account    account @relation(fields: [id_account], references: [id_account], onDelete: NoAction, onUpdate: NoAction, map: "account_team_ibfk_1")
+  account    account @relation(fields: [id_account], references: [id_account], onDelete: Cascade, onUpdate: NoAction, map: "account_team_ibfk_1")
   team       team    @relation(fields: [id_team], references: [id_team], onDelete: NoAction, onUpdate: NoAction, map: "account_team_ibfk_2")
 
   @@id([id_account, id_team])
@@ -143,8 +143,8 @@ model project {
   status_open    Boolean
   webhook_secret String?   @db.VarChar(50)
   end_time       DateTime? @db.DateTime(0)
-  id_account     Int
-  account        account   @relation(fields: [id_account], references: [id_account], onDelete: NoAction, onUpdate: NoAction, map: "project_ibfk_1")
+  id_account     Int?
+  account        account?  @relation(fields: [id_account], references: [id_account], onUpdate: NoAction, map: "project_ibfk_1")
   step           step[]
   team           team[]
 
