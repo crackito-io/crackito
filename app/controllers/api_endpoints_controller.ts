@@ -1,4 +1,4 @@
-import { GiteaApiService, GiteaProtectedBranch, GiteaWebhook } from '#services/gitea_api_service'
+import GiteaApiService, { GiteaProtectedBranch, GiteaWebhook } from '#services/gitea_api_service'
 import WoodpeckerApiService from '#services/woodpecker_api_service'
 import { inject } from '@adonisjs/core'
 import { HttpContext } from '@adonisjs/core/http'

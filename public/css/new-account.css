@@ -1,0 +1,12 @@
+#progress-create-user-outer {
+  display:none;
+}
+
+#progress-create-user-inner {
+  transition:width 1s ease-out;
+  width:0%;
+}
+
+#progress-create-user-inner.loading {
+  width: 100%;
+}

@@ -18,7 +18,7 @@ export type GiteaProtectedBranch = {
   files: Array<string>
 }
 
-export class GiteaApiService {
+export default class GiteaApiService {
   private owner_name: string = ''
   private http_service: HttpService = new HttpService(`${env.get('GITEA_URL')}/api/v1`, {
     Authorization: `Bearer ${env.get('GITEA_TOKEN')}`,
@@ -81,6 +81,52 @@ export class GiteaApiService {
     await this.protectBranch(repoName, protection)
 
     return membersRepo
+  }
+
+  async deleteUser(username: string) {
+    const url = `/admin/users/${username}`
+    try {
+      await this.http_service.delete(url)
+    } catch (error) {
+      throw new ExternalAPIError(
+        error.response.status,
+        error.response.data,
+        error,
+        error.response.data.message
+      )
+    }
+  }
+
+  async createUser(
+    username: string,
+    password: string,
+    email: string,
+    first_name: string,
+    last_name: string
+  ) {
+    const url = `/admin/users`
+    const body = {
+      username: username,
+      password: password,
+      email: email,
+      full_name: first_name + ' ' + last_name,
+      login_name: username,
+      must_change_password: false,
+      restricted: false,
+      send_notify: false,
+      source_id: 0,
+      visibility: 'public',
+    }
+    try {
+      return await this.http_service.post(url, body)
+    } catch (error) {
+      throw new ExternalAPIError(
+        error.response.status,
+        error.response.data,
+        error,
+        error.response.data.message
+      )
+    }
   }
 
   async removeCIWebhook(repo_name: string) {
