@@ -36,4 +36,19 @@ export default class WoodpeckerApiService {
       )
     }
   }
+
+  async addSecretToRepository(repo_id: number, secret_name: string, secret_value: string) {
+    const url = `/repos/${repo_id}/secrets`
+    let body = { events: ['manual'], name: secret_name, value: secret_value, repo_id: repo_id }
+    try {
+      return await this.http_service.post(url, body)
+    } catch (error) {
+      throw new ExternalAPIError(
+        error.response.status,
+        error.response.data,
+        error,
+        error.response.data.message
+      )
+    }
+  }
 }
