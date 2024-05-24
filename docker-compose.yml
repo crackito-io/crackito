@@ -40,7 +40,8 @@ services:
     volumes:
       - ./data/gitea:/data
     depends_on:
-      - db-gitea
+      db-gitea:
+        condition: service_healthy
 
   db-gitea:
     container_name: db-gitea
@@ -52,6 +53,11 @@ services:
       - gitea
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 5s
+      timeout: 60s
+      retries: 5
 
   woodpecker-server:
     container_name: woodpecker_server
