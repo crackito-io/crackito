@@ -22,10 +22,8 @@ export default class FederationsController {
       return response.redirect().back()
     }
 
-    federationDatabaseService.setUserIdOrganization(idOrganization)
-
     // get all federations in the user organization
-    const [code, message, title, data] = await federationDatabaseService.getAllFederations()
+    const [code, message, title, data] = await federationDatabaseService.getAllFederations(idOrganization)
     return view.render('features/admin/federations', {
       federationsInOrganization: data,
     })
