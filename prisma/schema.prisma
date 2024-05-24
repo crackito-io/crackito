@@ -137,16 +137,15 @@ model account_team {
 }
 
 model project {
-  repo_name      String    @id @db.VarChar(255)
-  name           String?   @db.VarChar(50)
-  description    String?   @db.VarChar(255)
-  status_open    Boolean
-  webhook_secret String?   @db.VarChar(50)
-  end_time       DateTime? @db.DateTime(0)
-  id_account     Int?
-  account        account?  @relation(fields: [id_account], references: [id_account], onUpdate: NoAction, map: "project_ibfk_1")
-  step           step[]
-  team           team[]
+  repo_name   String    @id @db.VarChar(255)
+  name        String?   @db.VarChar(50)
+  description String?   @db.VarChar(255)
+  status_open Boolean
+  end_time    DateTime? @db.DateTime(0)
+  id_account  Int
+  account     account   @relation(fields: [id_account], references: [id_account], onDelete: NoAction, onUpdate: NoAction, map: "project_ibfk_1")
+  step        step[]
+  team        team[]
 
   @@index([id_account], map: "id_account")
 }
@@ -159,6 +158,7 @@ model team {
   join_project_at         DateTime?      @db.DateTime(0)
   status_project_finished Boolean?
   finish_project_at       DateTime?      @db.DateTime(0)
+  webhook_secret          String?        @db.VarChar(100)
   account_team            account_team[]
   project                 project        @relation(fields: [repo_name], references: [repo_name], onDelete: NoAction, onUpdate: NoAction, map: "team_ibfk_1")
   test                    test[]

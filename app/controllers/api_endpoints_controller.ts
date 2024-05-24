@@ -43,21 +43,47 @@ export default class ApiEndpointsController {
       return response.badRequest({ message: 'Token/Webhook Secret is not associated to a team' })
     }
 
-    for (let step of body.steps) {
-      for (let test of step.tests) {
-        let update = await projectDatabaseService.updateTestFromTeam(
-          team.id_team,
-          team.repo_name,
-          step.name,
-          test.name,
-          test.passed,
-          test.passed ? 'OK' : test.error,
-          test.passed ? null : test.message
-        )
-        if (!update) {
-          logger.info({ tag: '#0932D0' }, 'One test update does not pass, potentially one test does not exist')
-          return response.internalServerError({ message: 'One test not found' })
-        }
+    // all team test in database
+    let testsTeam = team.test.map((t) => ({
+      step_name: t.step_name,
+      test_name: t.test_name,
+      status_passed: t.status_passed,
+    }))
+
+    // all test in request
+    let testsBody = body.steps.flatMap((s) =>
+      s.tests.map((t2) => ({
+        id_team: team.id_team,
+        repo_name: team.repo_name,
+        step_name: s.name,
+        test_name: t2.name,
+        status_passed: t2.passed,
+        error: t2.passed ? 'OK' : t2.error,
+        message: t2.passed ? null : t2.message,
+      }))
+    )
+
+    // intersec of both to get the test that have a changed state
+    let testsChanged = testsBody.filter((t) => {
+      let matchedTest = testsTeam.find(
+        (t2) => t2.step_name === t.step_name && t2.test_name === t.test_name
+      )
+      return matchedTest && t.status_passed !== matchedTest.status_passed
+    })
+
+    for (let test of testsChanged) {
+      let update = await projectDatabaseService.updateTestFromTeam(
+        test.id_team,
+        test.repo_name,
+        test.step_name,
+        test.test_name,
+        test.status_passed,
+        test.error,
+        test.message
+      )
+      if (!update) {
+        logger.info({ tag: '#0932D0' }, 'One test update does not pass, potentially one test does not exist')
+        return response.internalServerError({ message: 'One test not found' })
       }
     }
 
