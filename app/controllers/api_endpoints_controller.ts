@@ -87,7 +87,7 @@ export default class ApiEndpointsController {
       }
     }
 
-    return response.ok({ message: 'Tests updated' })
+    return response.ok({ message: `${testsChanged.length} tests updated` })
   }
 
   @inject()
