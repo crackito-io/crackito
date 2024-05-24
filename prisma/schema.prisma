@@ -41,16 +41,16 @@ model federation {
   id_federation      Int                  @id @default(autoincrement())
   federation_name    String               @db.VarChar(50)
   id_organization    Int
-  organization       organization         @relation(fields: [id_organization], references: [id_organization], onDelete: NoAction, onUpdate: NoAction, map: "federation_ibfk_1")
+  organization       organization         @relation(fields: [id_organization], references: [id_organization], onDelete: Cascade, onUpdate: NoAction, map: "federation_ibfk_1")
   federation_account federation_account[]
 
-  @@index([id_organization], map: "id_organization")
+  @@index([id_organization], map: "federation_ibfk1")
 }
 
 model federation_account {
   id_account    Int
   id_federation Int
-  account       account    @relation(fields: [id_account], references: [id_account], onDelete: NoAction, onUpdate: NoAction, map: "federation_account_ibfk_1")
+  account       account    @relation(fields: [id_account], references: [id_account], onDelete: Cascade, onUpdate: NoAction, map: "federation_account_ibfk_1")
   federation    federation @relation(fields: [id_federation], references: [id_federation], onDelete: NoAction, onUpdate: NoAction, map: "federation_account_ibfk_2")
 
   @@id([id_account, id_federation])

@@ -11,4 +11,4 @@ ALTER TABLE `federation` ADD COLUMN `id_organization` INTEGER NOT NULL;
 CREATE INDEX `federation_ibfk1` ON `federation`(`id_organization`);
 
 -- AddForeignKey
-ALTER TABLE `federation` ADD CONSTRAINT `federation_ibfk1` FOREIGN KEY (`id_organization`) REFERENCES `organization`(`id_organization`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE `federation` ADD CONSTRAINT `federation_ibfk1` FOREIGN KEY (`id_organization`) REFERENCES `organization`(`id_organization`) ON DELETE CASCADE ON UPDATE NO ACTION;

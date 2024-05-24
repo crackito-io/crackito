@@ -17,9 +17,6 @@ ALTER TABLE `step` DROP FOREIGN KEY `step_ibfk_1`;
 ALTER TABLE `account` ADD COLUMN `username` VARCHAR(50) NOT NULL;
 
 -- AlterTable
-ALTER TABLE `federation` ADD COLUMN `id_organization` INTEGER NOT NULL;
-
--- AlterTable
 ALTER TABLE `step` DROP PRIMARY KEY,
     DROP COLUMN `id_exercise`,
     ADD COLUMN `step_name` VARCHAR(50) NOT NULL,
@@ -90,12 +87,6 @@ CREATE TABLE `test` (
 
 -- CreateIndex
 CREATE UNIQUE INDEX `username` ON `account`(`username`);
-
--- CreateIndex
-CREATE INDEX `id_organization` ON `federation`(`id_organization`);
-
--- AddForeignKey
-ALTER TABLE `federation` ADD CONSTRAINT `federation_ibfk_1` FOREIGN KEY (`id_organization`) REFERENCES `organization`(`id_organization`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE `step` ADD CONSTRAINT `step_ibfk_1` FOREIGN KEY (`repo_name`) REFERENCES `project`(`repo_name`) ON DELETE NO ACTION ON UPDATE NO ACTION;
