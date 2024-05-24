@@ -142,8 +142,8 @@ model project {
   description String?   @db.VarChar(255)
   status_open Boolean
   end_time    DateTime? @db.DateTime(0)
-  id_account  Int
-  account     account   @relation(fields: [id_account], references: [id_account], onDelete: NoAction, onUpdate: NoAction, map: "project_ibfk_1")
+  id_account  Int?
+  account     account?  @relation(fields: [id_account], references: [id_account], onUpdate: NoAction, map: "project_ibfk_1")
   step        step[]
   team        team[]
 
