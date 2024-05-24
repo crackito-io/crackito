@@ -1,0 +1,61 @@
+@component('components/layouts/admin')
+    @slot('main')
+    <div class="pc-content">
+        <!-- [ breadcrumb ] start -->
+        <div class="page-header">
+            <div class="page-block">
+                <div class="row align-items-center">
+                    <div class="col-md-12">
+                        <ul class="breadcrumb mb-3">
+                            <li class="breadcrumb-item"><a href="/">{{ t('translate.breadcrumb_home_page') }}</a></li>
+                            <li class="breadcrumb-item"><a href="/admin">{{ t('translate.breadcrumb_home_admin_page') }}</a></li>
+                            <li class="breadcrumb-item" aria-current="page">{{ t('translate.breadcrumb_home_admin_federations_page') }}</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="page-header-title">
+                            <h2 class="mb-0">{{ t('translate.federations_list') }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- [ breadcrumb ] end -->
+
+
+
+        <!-- [ Main Content ] start -->
+        <div class="row">
+            <!-- [ sample-page ] start -->
+            <div class="col-sm-12">
+                @if(federationsInOrganization.length > 0)
+                <div class="card mx-0" style="height: 55vh;overflow:auto">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                <th style="border-top: none;">{{ t('translate.libelle_federation_label') }}</th>
+                                <th style="border-top: none;">{{ t('translate.account_number_federation_label') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @each(federation in federationsInOrganization)
+                                <tr>
+                                    <td>{{ federation.federation_name }}</td>
+                                    <td>{{ federation.federation_account.length }}</td>
+                                </tr>
+                                @endeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                @else
+                <div class="alert alert-warning" role="alert">
+                    {{ t('translate.no_federation_yet') }}
+                </div>
+                @endif
+            </div>
+        </div>
+    </div>
+    @end
+@end

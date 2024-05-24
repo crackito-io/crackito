@@ -161,7 +161,7 @@ ALTER TABLE `account_step` ADD CONSTRAINT `account_step_ibfk_1` FOREIGN KEY (`id
 ALTER TABLE `account_step` ADD CONSTRAINT `account_step_ibfk_2` FOREIGN KEY (`id_exercise`, `num_order`) REFERENCES `step`(`id_exercise`, `num_order`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE `federation_account` ADD CONSTRAINT `federation_account_ibfk_1` FOREIGN KEY (`id_account`) REFERENCES `account`(`id_account`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE `federation_account` ADD CONSTRAINT `federation_account_ibfk_1` FOREIGN KEY (`id_account`) REFERENCES `account`(`id_account`) ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE `federation_account` ADD CONSTRAINT `federation_account_ibfk_2` FOREIGN KEY (`id_federation`) REFERENCES `federation`(`id_federation`) ON DELETE NO ACTION ON UPDATE NO ACTION;

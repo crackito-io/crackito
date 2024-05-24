@@ -13,6 +13,7 @@ import AuthController from '#controllers/auth_controller'
 import ExercisesController from '#controllers/exercises_controller'
 import ApiEndpointsController from '#controllers/api_endpoints_controller'
 import AccountsController from '#controllers/accounts_controller'
+import FederationsController from '#controllers/federations_controller'
 
 /*
  *=================================================================
@@ -78,6 +79,9 @@ router
           .use(middleware.permissions(['delete_users']))
       })
       .prefix('/api')
+    router
+      .get('/federations', [FederationsController, 'listFederations'])
+      .use(middleware.permissions(['view_federations']))
   })
   .prefix('/admin')
   .use([middleware.auth()])
