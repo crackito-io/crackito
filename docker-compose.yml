@@ -1,18 +1,18 @@
 services:
   db-crackito:
     image: mysql:8.4.0
+    container_name: db-crackito
+    env_file:
+      - .env.db
     environment:
-      MYSQL_USER: crackito
-      MYSQL_PASSWORD: crackito
       MYSQL_ALLOW_EMPTY_PASSWORD: no
       MYSQL_RANDOM_ROOT_PASSWORD: yes
     ports:
-      - '3306:3306'
+      - "3306:3306"
     volumes:
       - ./database/init/:/docker-entrypoint-initdb.d
-
     healthcheck:
-      test: [ 'CMD', 'mysqladmin', 'ping', '-h', 'localhost' ]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
       timeout: 10s
       retries: 10
 
