@@ -40,10 +40,14 @@
     "breadcrumb_home_admin_page":"Admin",
     "breadcrumb_home_admin_accounts_page":"Accounts",
     "breadcrumb_home_admin_accounts_new_page":"New",
+    "breadcrumb_home_admin_federations_page":"Federations",
 
     "users_list":"List of users",
     "new_user":"New user",
     "no_account_yet":"There's no account yet.",
+
+    "federations_list":"List of federations",
+    "no_federation_yet":"There's no federation yet.",
 
     "bug_notification_title":"Notification",
     "bug_notification_message": "Notification message has not been received",
@@ -56,6 +60,9 @@
     "avatar_label":"Avatar",
     "first_name_label":"First Name",
     "last_name_label":"Last Name",
+
+    "libelle_federation_label": "Denomination",
+    "account_number_federation_label": "Number of users",
 
     "missing_perm":"Missing permission!",
 
@@ -161,5 +168,8 @@
     "exercise_not_exist_error":"The exercise you look for doesn't exist !",
 
     "exercise_text":"Exercices you are involved in",
-    "exercise_owned_text":"Exercices you own"
+    "exercise_owned_text":"Exercices you own",
+    "view_federations_missing_perm":"You do not have the rights to list federations. Please contact your organisation's administrator.",
+
+    "user_list_success":"All users have been listed"
 }
