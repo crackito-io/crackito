@@ -108,7 +108,7 @@ router
     router
       .group(() => {
         router.post('/git-event', [ApiEndpointsController, 'gitEvent'])
-        router.post('/ci-result/:token', [ApiEndpointsController, 'ciResult'])
+        router.post('/ci-result/', [ApiEndpointsController, 'ciResult'])
         router
           .group(() => {
             router.post('/', [ApiEndpointsController, 'createRepo'])
