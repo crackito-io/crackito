@@ -7,11 +7,14 @@ export default class WoodpeckerApiService {
     Authorization: `Bearer ${env.get('WOODPECKER_TOKEN')}`,
   })
 
-  async triggerPipeline(repo_id: number, default_branch: string) {
+  async triggerPipeline(repo_id: number, default_branch: string, token: string) {
     const url = `/repos/${repo_id}/pipelines`
     try {
       return await this.http_service.post(url, {
         branch: default_branch,
+        variables: {
+          token: token,
+        },
       })
     } catch (error) {
       throw new ExternalAPIError(

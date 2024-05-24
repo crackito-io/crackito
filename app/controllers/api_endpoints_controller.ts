@@ -4,20 +4,47 @@ import ProjectDatabaseService from '#services/project_database_service'
 import { inject } from '@adonisjs/core'
 import { HttpContext } from '@adonisjs/core/http'
 import { CiTestsResultDto, CiTestsResultSchema } from '../dto/CiTestsResult.dto.js'
+import { GitEventResultDto, GitEventResultSchema } from '../dto/GitEventResult.dto.js'
 
 export default class ApiEndpointsController {
   @inject()
-  async gitEvent({ request, response }: HttpContext, woodpeckerApiService: WoodpeckerApiService) {
+  async gitEvent({ request, response, logger }: HttpContext, woodpeckerApiService: WoodpeckerApiService, projectDatabaseService: ProjectDatabaseService) {
     //TODO : vérifier le schéma de la requête
     //TODO : vérifier que le répo existe bien
     //TODO : vérifier qu'il n'existe pas de pipeline en cours
 
-    const repo_id = request.body().repository.id
-    const default_branch = request.body().repository.default_branch
+    const body = request.body()
+
+    let gitEventResultDto: GitEventResultDto
+    try {
+      gitEventResultDto = GitEventResultSchema.parse(body)
+    } catch (error) {
+      logger.info({ tag: '#E33F2F' }, 'Git event result validation failed')
+      response.badRequest({ message: 'Git event result validation failed', error: error })
+      return
+    }
+
+    // unique name from crackito git account (crackito/<name>)
+    const teamRepoName = body.repository.name
+    const team = await projectDatabaseService.getTeamFromTeamRepoName(teamRepoName)
+
+    if (team === null) {
+      logger.info({ tag: '#11EA2F' }, 'Team repo name not associated to a team')
+      return response.badRequest({ message: 'Team repo name is not associated to a team' })
+    }
+
+    if (!team.webhook_secret) {
+      logger.info({ tag: '#441A2F' }, 'Team associated with this team repo name does have a token')
+      return response.badRequest({ message: 'Team associated with this team repo name does have a token' })
+    }
+
+    const repoId = body.repository.id
+    const defaultBranch = body.repository.default_branch
 
     try {
-      await woodpeckerApiService.triggerPipeline(repo_id, default_branch)
+      await woodpeckerApiService.triggerPipeline(repoId, defaultBranch, team.webhook_secret)
     } catch (error) {
+      logger.info({ tag: '#DD1342' }, `Error during the triggering of the pipeline : ${error}`)
       response.badRequest({ message: 'Error during the triggering of the pipeline.' })
       return
     }
@@ -29,8 +56,9 @@ export default class ApiEndpointsController {
 
     let ciTestsResultDto: CiTestsResultDto
     try {
-      ciTestsResultDto = await CiTestsResultSchema.parseAsync(request.body())
+      ciTestsResultDto = await CiTestsResultSchema.parseAsync(body)
     } catch (error) {
+      logger.info({ tag: '#135F2F' }, 'CI tests results validation failed')
       response.badRequest({ message: 'CI tests results validation failed', error: error })
       return
     }
