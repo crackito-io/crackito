@@ -45,7 +45,7 @@ export default class GiteaApiService {
   }
 
   async addMemberToRepository(repo_name: string, username: string) {
-    await this.getOWner()
+    await this.getOwner()
     await this.memberExist(username)
     const url = `/repos/${this.owner_name}/${repo_name}/collaborators/${username}`
     const body = {
@@ -69,7 +69,7 @@ export default class GiteaApiService {
     webhook: GiteaWebhook,
     protection: GiteaProtectedBranch
   ) {
-    await this.getOWner()
+    await this.getOwner()
     let newName = `${repo_name}-${members.join('-')}`
     let membersRepo = await this.createRepoFromTemplate(repo_name, newName)
     let repoName = membersRepo.data.name
@@ -130,7 +130,7 @@ export default class GiteaApiService {
   }
 
   async removeCIWebhook(repo_name: string) {
-    await this.getOWner()
+    await this.getOwner()
     const url = `/repos/${this.owner_name}/${repo_name}/hooks`
     try {
       const result = await this.http_service.get(url)
@@ -154,7 +154,7 @@ export default class GiteaApiService {
   }
 
   private async addWebhook(repo_name: string, webhook: GiteaWebhook) {
-    await this.getOWner()
+    await this.getOwner()
     const url = `/repos/${this.owner_name}/${repo_name}/hooks`
     const body = {
       active: true,
@@ -181,7 +181,7 @@ export default class GiteaApiService {
   }
 
   private async deleteWebhook(repo_name: string, webhook_id: number) {
-    await this.getOWner()
+    await this.getOwner()
     const url = `/repos/${this.owner_name}/${repo_name}/hooks/${webhook_id}`
     try {
       return await this.http_service.delete(url)
@@ -249,7 +249,7 @@ export default class GiteaApiService {
     }
   }
 
-  private async getOWner() {
+  private async getOwner() {
     if (this.owner_name) {
       return
     }
