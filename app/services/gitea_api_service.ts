@@ -71,6 +71,27 @@ export default class GiteaApiService {
     }
   }
 
+  async convertToTemplate(repo_name: string) {
+    await this.getOwner()
+    const url: string = `/repos/${this.owner_name}/${repo_name}`
+    const body = { template: true }
+    try {
+      return await this.http_service.patch(url, body)
+    } catch (error) {
+      let externalError: ExternalAPIError = new ExternalAPIError(
+        error.response.status,
+        error.response.data,
+        error,
+        error.response.data.message
+      )
+      if (error.response.status === 404) {
+        externalError.addErrorDetails(new GitRepositoryNotFound(repo_name))
+      }
+
+      throw externalError
+    }
+  }
+
   async addMemberToRepository(repo_name: string, username: string) {
     await this.getOwner()
     await this.memberExist(username)
