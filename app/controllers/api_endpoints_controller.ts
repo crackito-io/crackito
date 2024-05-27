@@ -8,7 +8,7 @@ import { GitEventResultDto, GitEventResultSchema } from '../dto/GitEventResult.d
 import env from '#start/env'
 
 export default class ApiEndpointsController {
-  private webhook_url = env.get('CRACKITO_URL') + env.get('CI_RESULTS_PATH')
+  private webhook_url: string = env.get('CRACKITO_URL') + env.get('CI_RESULTS_PATH')
 
   @inject()
   async gitEvent({ request, response, logger }: HttpContext, woodpeckerApiService: WoodpeckerApiService, projectDatabaseService: ProjectDatabaseService) {
@@ -37,8 +37,8 @@ export default class ApiEndpointsController {
       return response.badRequest({ message: 'Team associated with this team repo name does have a token' })
     }
 
-    const repoId = body.repository.id
-    const defaultBranch = body.repository.default_branch
+    const repoId: number = body.repository.id
+    const defaultBranch: string = body.repository.default_branch
 
     const repoRequest = await woodpeckerApiService.getRepository(repoId)
     const repo = repoRequest.data
@@ -64,8 +64,8 @@ export default class ApiEndpointsController {
       }
       try {
         await woodpeckerApiService.addSecretToRepository(repoId, 'WEBHOOK_URL', team.webhook_secret)
-      } catch (error2) {
-        logger.info({ tag: '#11AADA' }, `Error during the sending of the webhook url to the repo : ${JSON.stringify(error2)}`)
+      } catch (error3) {
+        logger.info({ tag: '#11AADA' }, `Error during the sending of the webhook url to the repo : ${JSON.stringify(error3)}`)
         response.badRequest({ message: 'Error during the sending of the webhook url to the repo.' })
         return
       }
@@ -73,8 +73,8 @@ export default class ApiEndpointsController {
 
     try {
       await woodpeckerApiService.triggerPipeline(repoId, defaultBranch)
-    } catch (error3) {
-      logger.info({ tag: '#DD1342' }, `Error during the triggering of the pipeline : ${JSON.stringify(error3)}`)
+    } catch (error4) {
+      logger.info({ tag: '#DD1342' }, `Error during the triggering of the pipeline : ${JSON.stringify(error4)}`)
       response.badRequest({ message: 'Error during the triggering of the pipeline.' })
       return
     }
