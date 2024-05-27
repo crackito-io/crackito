@@ -46,6 +46,7 @@ export default class GiteaApiService {
 
   async migrateRepository(source_url: string, destination_name: string) {
     const url: string = `/repos/migrate`
+    await this.getOwner()
     const body = {
       clone_addr: source_url,
       repo_name: destination_name,
