@@ -23,14 +23,6 @@ export default class ProjectDatabaseService {
     return team
   }
 
-  async getTeamFromTeamRepoName(teamRepoName: string) {
-    return await prisma.team.findFirst({
-      where: {
-        team_repo_name: teamRepoName,
-      },
-    })
-  }
-
   async updateTestFromTeam(
     id_team: number,
     repo_name: string,
