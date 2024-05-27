@@ -44,6 +44,32 @@ export default class GiteaApiService {
     }
   }
 
+  async migrateRepository(source_url: string, destination_name: string) {
+    const url: string = `/repos/migrate`
+    const body = {
+      clone_addr: source_url,
+      repo_name: destination_name,
+      repo_owner: this.owner_name,
+      service: 'github',
+      private: true,
+    }
+    try {
+      return await this.http_service.post(url, body)
+    } catch (error) {
+      let externalError: ExternalAPIError = new ExternalAPIError(
+        error.response.status,
+        error.response.data,
+        error,
+        error.response.data.message
+      )
+      if (error.response.status === 409) {
+        externalError.addErrorDetails(new GitRepositoryAlreadyExists(destination_name))
+      }
+
+      throw externalError
+    }
+  }
+
   async addMemberToRepository(repo_name: string, username: string) {
     await this.getOwner()
     await this.memberExist(username)
