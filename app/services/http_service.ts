@@ -36,4 +36,11 @@ export class HttpService {
       headers: headers,
     })
   }
+
+  patch(url: string, body: object, headers: object = {}) {
+    headers = { ...this.default_header, ...headers }
+    return this.client.patch(url, body, {
+      headers: headers,
+    })
+  }
 }
