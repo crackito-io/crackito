@@ -5,14 +5,13 @@ import { inject } from '@adonisjs/core'
 import { HttpContext } from '@adonisjs/core/http'
 import { CiTestsResultDto, CiTestsResultSchema } from '../dto/CiTestsResult.dto.js'
 import { GitEventResultDto, GitEventResultSchema } from '../dto/GitEventResult.dto.js'
+import env from '#start/env'
 
 export default class ApiEndpointsController {
+  private webhook_url = env.get('CRACKITO_URL') + env.get('CI_RESULTS_PATH')
+
   @inject()
   async gitEvent({ request, response, logger }: HttpContext, woodpeckerApiService: WoodpeckerApiService, projectDatabaseService: ProjectDatabaseService) {
-    //TODO : vérifier le schéma de la requête
-    //TODO : vérifier que le répo existe bien
-    //TODO : vérifier qu'il n'existe pas de pipeline en cours
-
     const body = request.body()
 
     let gitEventResultDto: GitEventResultDto
@@ -41,10 +40,41 @@ export default class ApiEndpointsController {
     const repoId = body.repository.id
     const defaultBranch = body.repository.default_branch
 
+    const repoRequest = await woodpeckerApiService.getRepository(repoId)
+    const repo = repoRequest.data
+
+    // if first commit
+    // data contains active either repo exists or not
+    // check of repo just for wierd case
+    if (!repo || !repo.active) {
+      // this try catch includes the case we receive a non existant repo (from gitea himself)
+      try {
+        await woodpeckerApiService.activateRepository(repoId)
+      } catch (error) {
+        logger.info({ tag: '#AAD242' }, `Error during the activation of the repo : ${JSON.stringify(error)}`)
+        response.badRequest({ message: 'Error during the activation of the repo.' })
+        return
+      }
+      try {
+        await woodpeckerApiService.addSecretToRepository(repoId, 'CALLBACK_TOKEN', this.webhook_url)
+      } catch (error2) {
+        logger.info({ tag: '#11D2AA' }, `Error during the sending of the callback token to the repo : ${JSON.stringify(error2)}`)
+        response.badRequest({ message: 'Error during the sending of the callback token to the repo.' })
+        return
+      }
+      try {
+        await woodpeckerApiService.addSecretToRepository(repoId, 'WEBHOOK_URL', team.webhook_secret)
+      } catch (error2) {
+        logger.info({ tag: '#11AADA' }, `Error during the sending of the webhook url to the repo : ${JSON.stringify(error2)}`)
+        response.badRequest({ message: 'Error during the sending of the webhook url to the repo.' })
+        return
+      }
+    }
+
     try {
-      await woodpeckerApiService.triggerPipeline(repoId, defaultBranch, team.webhook_secret)
-    } catch (error) {
-      logger.info({ tag: '#DD1342' }, `Error during the triggering of the pipeline : ${error}`)
+      await woodpeckerApiService.triggerPipeline(repoId, defaultBranch)
+    } catch (error3) {
+      logger.info({ tag: '#DD1342' }, `Error during the triggering of the pipeline : ${JSON.stringify(error3)}`)
       response.badRequest({ message: 'Error during the triggering of the pipeline.' })
       return
     }
