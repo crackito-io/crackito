@@ -23,8 +23,8 @@ export default class WoodpeckerApiService {
     }
   }
 
-  async getRepository(repo_id: number) {
-    const url = `/repos/${repo_id}`
+  async getRepositoryByFullName(repoFullName: string) {
+    const url = `/repos/lookup/${repoFullName}`
     try {
       return await this.http_service.get(url)
     } catch (error) {
