@@ -23,6 +23,20 @@ export default class WoodpeckerApiService {
     }
   }
 
+  async getRepositoryByFullName(repoFullName: string) {
+    const url = `/repos/lookup/${repoFullName}`
+    try {
+      return await this.http_service.get(url)
+    } catch (error) {
+      throw new ExternalAPIError(
+        error.response.status,
+        error.response.data,
+        error,
+        error.response.data.message
+      )
+    }
+  }
+
   async activateRepository(repo_id: number) {
     const url = `/repos?forge_remote_id=${repo_id}`
     try {

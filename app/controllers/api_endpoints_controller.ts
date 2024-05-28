@@ -4,21 +4,98 @@ import ProjectDatabaseService from '#services/project_database_service'
 import { inject } from '@adonisjs/core'
 import { HttpContext } from '@adonisjs/core/http'
 import { CiTestsResultDto, CiTestsResultSchema } from '../dto/CiTestsResult.dto.js'
+import { GitEventResultDto, GitEventResultSchema } from '../dto/GitEventResult.dto.js'
+import env from '#start/env'
 
 export default class ApiEndpointsController {
-  @inject()
-  async gitEvent({ request, response }: HttpContext, woodpeckerApiService: WoodpeckerApiService) {
-    //TODO : vérifier le schéma de la requête
-    //TODO : vérifier que le répo existe bien
-    //TODO : vérifier qu'il n'existe pas de pipeline en cours
+  private webhook_url: string = env.get('CRACKITO_URL') + env.get('CI_RESULTS_PATH')
 
-    const repo_id = request.body().repository.id
-    const default_branch = request.body().repository.default_branch
+  @inject()
+  async gitEvent({ request, response, logger }: HttpContext, woodpeckerApiService: WoodpeckerApiService, projectDatabaseService: ProjectDatabaseService, giteaApiService: GiteaApiService) {
+    const body = request.body()
+
+    let gitEventResultDto: GitEventResultDto
+    try {
+      gitEventResultDto = GitEventResultSchema.parse(body)
+    } catch (error) {
+      logger.info({ tag: '#E33F2F' }, 'Git event result validation failed')
+      response.badRequest({ message: 'Git event result validation failed', error: error })
+      return
+    }
+
+    // unique name from crackito git account (crackito/<name>)
+    const teamRepoName = body.repository.name
+    const team = await projectDatabaseService.getTeamFromTeamRepoName(teamRepoName)
+
+    if (team === null) {
+      logger.info({ tag: '#11EA2F' }, 'Team repo name not associated to a team')
+      return response.badRequest({ message: 'Team repo name is not associated to a team' })
+    }
+
+    if (!team.webhook_secret) {
+      logger.info({ tag: '#441A2F' }, 'Team associated with this team repo name does have a token')
+      return response.badRequest({ message: 'Team associated with this team repo name does have a token' })
+    }
+
+    const giteaRepoId: number = body.repository.id
+    const giteaRepoFullName: string = body.repository.full_name
+    const defaultBranch: string = body.repository.default_branch
+
+    let repoRequest
+    try {
+      repoRequest = await woodpeckerApiService.getRepositoryByFullName(giteaRepoFullName)
+    } catch (e) {
+      if (e.status !== 404) {
+        logger.info({ tag: '#FFA342' }, `Error during the get of the repo : ${JSON.stringify(e)}`)
+        response.badRequest({ message: `Error during the get of the repo.` })
+        return
+      }
+    }
+
+    let repoId
+
+    if (!repoRequest || !repoRequest.data.active) {
+      let createResult
+      try {
+        createResult = await woodpeckerApiService.activateRepository(giteaRepoId)
+      } catch (error) {
+        logger.info({ tag: '#AAD242' }, `Error during the activation of the repo : ${JSON.stringify(error)}`)
+        response.internalServerError({ message: 'Error during the activation of the repo.' })
+        return
+      }
+      try {
+        // remove the webhooks created by woodpecker
+        await giteaApiService.removeCIWebhook(teamRepoName)
+      } catch (error2) {
+        logger.info({ tag: '#DDA2FF' }, `Error while removing the CI webhook of the repo in gitea : ${JSON.stringify(error2)}`)
+        response.internalServerError({ message: 'Error while removing the CI webhook of the repo in gitea.' })
+        return
+      }
+      repoId = createResult.data.id
+      try {
+        await woodpeckerApiService.addSecretToRepository(repoId, 'CALLBACK_TOKEN', team.webhook_secret)
+      } catch (error3) {
+        logger.info({ tag: '#11D2AA' }, `Error during the sending of the callback token to the repo, maybe the token is aready known by woodpecker : ${JSON.stringify(error3)}`)
+        response.internalServerError({ message: 'Error during the sending of the callback token to the repo.' })
+        return
+      }
+      try {
+        await woodpeckerApiService.addSecretToRepository(repoId, 'WEBHOOK_URL', this.webhook_url)
+      } catch (error4) {
+        logger.info({ tag: '#11AADA' }, `Error during the sending of the webhook url to the repo, maybe the url is aready known by woodpecker : ${JSON.stringify(error4)}`)
+        response.internalServerError({ message: 'Error during the sending of the webhook url to the repo.' })
+        return
+      }
+    } else {
+      const repo = repoRequest.data
+      repoId = repo.id
+    }
 
     try {
-      await woodpeckerApiService.triggerPipeline(repo_id, default_branch)
-    } catch (error) {
-      response.badRequest({ message: 'Error during the triggering of the pipeline.' })
+      await woodpeckerApiService.triggerPipeline(repoId, defaultBranch)
+    } catch (error4) {
+      logger.info({ tag: '#DD1342' }, `Error during the triggering of the pipeline : ${JSON.stringify(error4)}`)
+      response.internalServerError({ message: 'Error during the triggering of the pipeline.' })
       return
     }
   }
@@ -29,8 +106,9 @@ export default class ApiEndpointsController {
 
     let ciTestsResultDto: CiTestsResultDto
     try {
-      ciTestsResultDto = await CiTestsResultSchema.parseAsync(request.body())
+      ciTestsResultDto = await CiTestsResultSchema.parseAsync(body)
     } catch (error) {
+      logger.info({ tag: '#135F2F' }, 'CI tests results validation failed')
       response.badRequest({ message: 'CI tests results validation failed', error: error })
       return
     }
