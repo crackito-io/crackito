@@ -59,6 +59,17 @@ export class GitRepositoryNotATemplate extends GitRepositoryError {
   }
 }
 
+export class GitContentFileNotFound implements IsPrintableErrorMessage {
+  constructor(
+    private repo: string,
+    private file: string
+  ) {}
+
+  getPrintableErrorMessage(i18n: I18n): string {
+    return i18n.t('file_not_found', { file: this.file, repo: this.repo })
+  }
+}
+
 export class UserNotFound implements IsPrintableErrorMessage {
   constructor(private username: string) {}
 
