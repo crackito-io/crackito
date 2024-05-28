@@ -1,11 +1,12 @@
 import env from '#start/env'
 import { HttpService } from '#services/http_service'
 import {
+  ExternalAPIError,
+  GitContentFileNotFound,
   GitRepositoryAlreadyExists,
   GitRepositoryNotATemplate,
   GitRepositoryNotFound,
   UserNotFound,
-  ExternalAPIError,
 } from '#services/custom_error'
 
 export type GiteaWebhook = {
@@ -44,8 +45,56 @@ export default class GiteaApiService {
     }
   }
 
+  async migrateRepository(source_url: string, destination_name: string) {
+    const url: string = `/repos/migrate`
+    await this.getOwner()
+    const body = {
+      clone_addr: source_url,
+      repo_name: destination_name,
+      repo_owner: this.owner_name,
+      service: 'github',
+      private: true,
+    }
+    try {
+      return await this.http_service.post(url, body)
+    } catch (error) {
+      let externalError: ExternalAPIError = new ExternalAPIError(
+        error.response.status,
+        error.response.data,
+        error,
+        error.response.data.message
+      )
+      if (error.response.status === 409) {
+        externalError.addErrorDetails(new GitRepositoryAlreadyExists(destination_name))
+      }
+
+      throw externalError
+    }
+  }
+
+  async convertToTemplate(repo_name: string) {
+    await this.getOwner()
+    const url: string = `/repos/${this.owner_name}/${repo_name}`
+    const body = { template: true }
+    try {
+      return await this.http_service.patch(url, body)
+    } catch (error) {
+      let externalError: ExternalAPIError = new ExternalAPIError(
+        error.response.status,
+        error.response.data,
+        error,
+        error.response.data.message
+      )
+      if (error.response.status === 404) {
+        externalError.addErrorDetails(new GitRepositoryNotFound(repo_name))
+      }
+
+      throw externalError
+    }
+  }
+
   async addMemberToRepository(repo_name: string, username: string) {
-    await this.getOWner()
+    await this.getOwner()
     await this.memberExist(username)
     const url = `/repos/${this.owner_name}/${repo_name}/collaborators/${username}`
     const body = {
@@ -69,7 +118,7 @@ export default class GiteaApiService {
     webhook: GiteaWebhook,
     protection: GiteaProtectedBranch
   ) {
-    await this.getOWner()
+    await this.getOwner()
     let newName = `${repo_name}-${members.join('-')}`
     let membersRepo = await this.createRepoFromTemplate(repo_name, newName)
     let repoName = membersRepo.data.name
@@ -130,7 +179,7 @@ export default class GiteaApiService {
   }
 
   async removeCIWebhook(repo_name: string) {
-    await this.getOWner()
+    await this.getOwner()
     const url = `/repos/${this.owner_name}/${repo_name}/hooks`
     try {
       const result = await this.http_service.get(url)
@@ -153,8 +202,29 @@ export default class GiteaApiService {
     }
   }
 
+  async getProtected(repo_name: string) {
+    await this.getOwner()
+    await this.getRepository(repo_name)
+    const url: string = `/repos/${this.owner_name}/${repo_name}/contents/.protected`
+    try {
+      return await this.http_service.get(url)
+    } catch (error) {
+      let externalError: ExternalAPIError = new ExternalAPIError(
+        error.response.status,
+        error.response.data,
+        error,
+        error.response.data.message
+      )
+
+      if (error.response.status === 404) {
+        externalError.addErrorDetails(new GitContentFileNotFound(repo_name, '.protected'))
+      }
+      throw externalError
+    }
+  }
+
   private async addWebhook(repo_name: string, webhook: GiteaWebhook) {
-    await this.getOWner()
+    await this.getOwner()
     const url = `/repos/${this.owner_name}/${repo_name}/hooks`
     const body = {
       active: true,
@@ -181,7 +251,7 @@ export default class GiteaApiService {
   }
 
   private async deleteWebhook(repo_name: string, webhook_id: number) {
-    await this.getOWner()
+    await this.getOwner()
     const url = `/repos/${this.owner_name}/${repo_name}/hooks/${webhook_id}`
     try {
       return await this.http_service.delete(url)
@@ -249,7 +319,7 @@ export default class GiteaApiService {
     }
   }
 
-  private async getOWner() {
+  private async getOwner() {
     if (this.owner_name) {
       return
     }
@@ -280,6 +350,25 @@ export default class GiteaApiService {
         error.response.data.message
       )
       externalError.addErrorDetails(new UserNotFound(username))
+      throw externalError
+    }
+  }
+
+  private async getRepository(repo_name: string) {
+    await this.getOwner()
+    const url = `/repos/${this.owner_name}/${repo_name}`
+    try {
+      return await this.http_service.get(url)
+    } catch (error) {
+      let externalError: ExternalAPIError = new ExternalAPIError(
+        error.response.status,
+        error.response.data,
+        error,
+        error.response.data.message
+      )
+      if (error.response.status === 404) {
+        externalError.addErrorDetails(new GitRepositoryNotFound(repo_name))
+      }
       throw externalError
     }
   }
