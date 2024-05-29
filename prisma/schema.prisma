@@ -175,7 +175,7 @@ model test {
   message          String?  @db.VarChar(50)
   detailed_message String?  @db.VarChar(2500)
   team             team     @relation(fields: [id_team], references: [id_team], onDelete: NoAction, onUpdate: NoAction, map: "test_ibfk_1")
-  step             step     @relation(fields: [repo_name, step_name], references: [repo_name, step_name], onDelete: NoAction, onUpdate: NoAction, map: "test_ibfk_2")
+  step             step     @relation(fields: [repo_name, step_name], references: [repo_name, step_name], onDelete: Cascade, onUpdate: NoAction, map: "test_ibfk_2")
 
   @@id([id_team, repo_name, step_name, test_name])
   @@index([repo_name, step_name], map: "repo_name")

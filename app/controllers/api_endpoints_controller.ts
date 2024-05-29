@@ -166,10 +166,8 @@ export default class ApiEndpointsController {
       let matchedTest = testsTeam.find(
         (t2) => t2.step_name === t.step_name && t2.test_name === t.test_name
       )
-      console.log(t.step_name+t.test_name, matchedTest, matchedTest ? t.status_passed !== matchedTest.status_passed : 'pas match')
       return !matchedTest || (matchedTest && t.status_passed !== matchedTest.status_passed)
     })
-    console.log(testsChanged)
 
     for (let test of testsChanged) {
       let update = await projectDatabaseService.updateTestFromTeam(
@@ -222,8 +220,6 @@ export default class ApiEndpointsController {
         return response.status(code).send({ status_code: code, status_message: message, title: title })
       }
     }
-    console.log('steps=>', stepsToDelete)
-    console.log('tests=>', testsToDelete)
 
     return response.ok({ message: `${testsChanged.length} tests added/updated, ${stepsToCreate.length} steps added, ${testsToDelete.length} tests deleted, ${stepsToDelete.length} steps deleted` })
   }
