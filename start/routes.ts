@@ -77,6 +77,7 @@ router
             cast: (value) => Number(value),
           })
           .use(middleware.permissions(['delete_users']))
+        router.post('/createteams', [ApiEndpointsController, 'createStudentsProject'])
       })
       .prefix('/api')
     router
@@ -117,7 +118,7 @@ router
           .group(() => {
             router.post('/', [ApiEndpointsController, 'createRepo'])
             router.put('/', [ApiEndpointsController, 'addMemberToRepo'])
-            router.post('/fork', [ApiEndpointsController, 'createStudentTP'])
+            router.post('/fork', [ApiEndpointsController, 'createStudentsProject'])
           })
           .prefix('/repos')
       })

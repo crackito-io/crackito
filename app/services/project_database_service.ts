@@ -1,4 +1,5 @@
 import { prisma } from '#config/app'
+import UserDatabaseService from './user_database_service.js'
 
 export default class ProjectDatabaseService {
   async getProjectFromRepoName(repo_name: string) {
@@ -64,5 +65,54 @@ export default class ProjectDatabaseService {
     }
 
     return true
+  }
+
+  async createTeam(
+    teamRepoName: string,
+    repoName: string,
+    members: Array<string>,
+    token: string,
+    userDatabaseService: UserDatabaseService
+  ) {
+    let team
+    try {
+      team = await prisma.team.create({
+        data: {
+          team_repo_name: teamRepoName,
+          last_commit: null,
+          status_project_finished: false,
+          finish_project_at: null,
+          webhook_secret: token,
+          join_project_at: new Date(),
+          repo_name: repoName,
+        },
+      })
+    } catch (e) {
+      if (e.code === 'P2002' && e.meta && e.meta.target && e.meta.target.includes('team_repo_name')) {
+        return [409, 'team_already_exists', 'error']
+      } else if (e.code === 'P2003' && e.meta && e.meta.field_name && e.meta.field_name.includes('repo_name')) {
+        return [409, 'project_not_exists', 'error']
+      }
+      return [500, 'internal_server_error', 'error']
+    }
+
+    for (let member of members) {
+      // get user id from username
+      let user = await userDatabaseService.getUserFromUsername(member)
+      if (user === null) {
+        return [404, 'user_not_found', 'error']
+      }
+      try {
+        await prisma.account_team.create({
+          data: {
+            id_account: user.id_account,
+            id_team: team.id_team,
+          },
+        })
+      } catch (e2) {
+        return [500, 'internal_server_error', 'error']
+      }
+    }
+    return [200, 'ok', 'success']
   }
 }
