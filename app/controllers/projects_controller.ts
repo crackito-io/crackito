@@ -16,7 +16,7 @@ export default class ProjectsController {
     protection: GiteaProtectedBranch,
     giteaApiService: GiteaApiService
   ) {
-    await giteaApiService.getOWner()
+    await giteaApiService.getOwner()
     let membersRepo
     membersRepo = await giteaApiService.createRepoFromTemplate(repo_name, newName)
 
@@ -39,7 +39,7 @@ export default class ProjectsController {
     try {
       createStudentsRepoDto = CreateStudentsRepoSchema.parse(body)
     } catch (error) {
-      logger.info({ tag: '#A13F2F' }, 'Create Student Exercise validation failed')
+      logger.error({ tag: '#A13F2F' }, 'Create Student Exercise validation failed')
       response.badRequest({ message: 'Create Student Exercise validation failed', error: error })
       return
     }
@@ -62,7 +62,7 @@ export default class ProjectsController {
       try {
         await this.initGiteaProject(body.name, newName, team, webhook, protection, giteaApiService)
       } catch (e) {
-        logger.info({ tag: '#DDA2FF' }, `Error while creating repo in gitea : ${JSON.stringify(e)}`)
+        logger.error({ tag: '#DDA2FF' }, `Error while creating repo in gitea : ${JSON.stringify(e)}`)
         response.status(e.status).send({ status_code: e.status, status_message: e.message })
         return
       }
@@ -72,16 +72,17 @@ export default class ProjectsController {
           // rollback create in gitea
           await giteaApiService.deleteRepository(newName)
         } catch (e2) {
-          logger.info({ tag: '#DFA2FF' }, `Error while rollback the creation of repo in gitea after database error : ${JSON.stringify(e2)}`)
+          logger.error({ tag: '#DFA2FF' }, `Error while rollback the creation of repo in gitea after database error : ${JSON.stringify(e2)}`)
           response.status(e2.status).send({ status_code: e2.status, status_message: e2.message })
           return
         }
-        logger.info({ tag: '#DFA20F' }, 'Error while adding project to database, gitea rollback...')
+        logger.error({ tag: '#DFA20F' }, 'Error while adding project to database, gitea rollback...')
         response.status(code).send({status_code: code, status_message: i18n.t(`translate.${message}`), title: i18n.t(`translate.${title}`)})
         return
       }
     }
 
+    logger.info({ tag: '#DD3AFA'}, 'Teams projects created in gitea and database successfully')
     response.status(200).send({ status_code: 200, status_message: 'Teams projects created successfully' })
   }
 }
