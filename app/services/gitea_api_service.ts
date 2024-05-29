@@ -93,6 +93,21 @@ export default class GiteaApiService {
     }
   }
 
+  async deleteRepository(repo_name: string) {
+    await this.getOwner()
+    const url: string = `/repos/${this.owner_name}/${repo_name}`
+    try {
+      return await this.http_service.delete(url)
+    } catch (error) {
+      throw new ExternalAPIError(
+        error.response.status,
+        error.response.data,
+        error,
+        error.response.data.message
+      )
+    }
+  }
+
   async addMemberToRepository(repo_name: string, username: string) {
     await this.getOwner()
     await this.memberExist(username)
@@ -110,26 +125,6 @@ export default class GiteaApiService {
         error.response.data.message
       )
     }
-  }
-
-  async initExercise(
-    repo_name: string,
-    members: Array<string>,
-    webhook: GiteaWebhook,
-    protection: GiteaProtectedBranch
-  ) {
-    await this.getOwner()
-    let newName = `${repo_name}-${members.join('-')}`
-    let membersRepo = await this.createRepoFromTemplate(repo_name, newName)
-    let repoName = membersRepo.data.name
-
-    for (let member of members) {
-      await this.addMemberToRepository(repoName, member)
-    }
-    await this.addWebhook(repoName, webhook)
-    await this.protectBranch(repoName, protection)
-
-    return membersRepo
   }
 
   async deleteUser(username: string) {
@@ -223,7 +218,7 @@ export default class GiteaApiService {
     }
   }
 
-  private async addWebhook(repo_name: string, webhook: GiteaWebhook) {
+  async addWebhook(repo_name: string, webhook: GiteaWebhook) {
     await this.getOwner()
     const url = `/repos/${this.owner_name}/${repo_name}/hooks`
     const body = {
@@ -250,7 +245,7 @@ export default class GiteaApiService {
     }
   }
 
-  private async deleteWebhook(repo_name: string, webhook_id: number) {
+  async deleteWebhook(repo_name: string, webhook_id: number) {
     await this.getOwner()
     const url = `/repos/${this.owner_name}/${repo_name}/hooks/${webhook_id}`
     try {
@@ -265,7 +260,7 @@ export default class GiteaApiService {
     }
   }
 
-  private async protectBranch(repo_name: string, protection: GiteaProtectedBranch) {
+  async protectBranch(repo_name: string, protection: GiteaProtectedBranch) {
     const url = `/repos/${this.owner_name}/${repo_name}/branch_protections`
     const body = {
       branch_name: protection.branch,
@@ -284,7 +279,7 @@ export default class GiteaApiService {
     }
   }
 
-  private async createRepoFromTemplate(repo_name: string, fork_name: string) {
+  async createRepoFromTemplate(repo_name: string, fork_name: string) {
     const url = `/repos/${this.owner_name}/${repo_name}/generate`
     const body = {
       name: fork_name,
@@ -319,7 +314,7 @@ export default class GiteaApiService {
     }
   }
 
-  private async getOwner() {
+  async getOwner() {
     if (this.owner_name) {
       return
     }
@@ -337,7 +332,7 @@ export default class GiteaApiService {
     }
   }
 
-  private async memberExist(username: string) {
+  async memberExist(username: string) {
     const url = `/users/${username}`
     try {
       await this.http_service.get(url)

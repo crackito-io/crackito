@@ -14,6 +14,7 @@ import ExercisesController from '#controllers/exercises_controller'
 import ApiEndpointsController from '#controllers/api_endpoints_controller'
 import AccountsController from '#controllers/accounts_controller'
 import FederationsController from '#controllers/federations_controller'
+import ProjectsController from '#controllers/projects_controller'
 
 /*
  *=================================================================
@@ -77,6 +78,7 @@ router
             cast: (value) => Number(value),
           })
           .use(middleware.permissions(['delete_users']))
+        router.post('/createteams', [ProjectsController, 'createStudentsProject'])
       })
       .prefix('/api')
     router
@@ -117,7 +119,7 @@ router
           .group(() => {
             router.post('/', [ApiEndpointsController, 'createRepo'])
             router.put('/', [ApiEndpointsController, 'addMemberToRepo'])
-            router.post('/fork', [ApiEndpointsController, 'createStudentTP'])
+            router.post('/fork', [ProjectsController, 'createStudentsProject'])
           })
           .prefix('/repos')
       })

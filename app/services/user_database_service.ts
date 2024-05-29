@@ -13,6 +13,16 @@ export default class UserDatabaseService {
     return user
   }
 
+  async getUserFromUsername(username: string) {
+    const user = await prisma.account.findFirst({
+      where: {
+        username: username,
+      },
+    })
+
+    return user
+  }
+
   async usernameAlreadyExists(username: string): Promise<account | null> {
     const user: account | null = await prisma.account.findFirst({
       where: {

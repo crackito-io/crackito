@@ -171,5 +171,11 @@
     "exercise_owned_text":"Exercices you own",
     "view_federations_missing_perm":"You do not have the rights to list federations. Please contact your organisation's administrator.",
 
-    "user_list_success":"All users have been listed"
+    "user_list_success":"All users have been listed",
+
+    "user_not_found_username":"User not found",
+    "project_not_exists":"Project does not exist",
+    "team_already_exists":"Team already exists",
+    "user_not_found":"Gitea user not found in database",
+    "ok":"OK"
 }

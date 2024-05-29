@@ -152,7 +152,7 @@ model project {
 
 model team {
   id_team                 Int            @id @default(autoincrement())
-  team_repo_name          String?        @db.VarChar(50)
+  team_repo_name          String?        @unique(map: "team_repo_name") @db.VarChar(50)
   last_commit             DateTime?      @db.DateTime(0)
   repo_name               String         @db.VarChar(255)
   join_project_at         DateTime?      @db.DateTime(0)
