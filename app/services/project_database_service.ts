@@ -82,8 +82,7 @@ export default class ProjectDatabaseService {
     title: string,
     description: string,
     stepName: string,
-    repoName: string,
-    testNumber: number
+    repoName: string
   ) {
     try {
       await prisma.step.create({
@@ -93,7 +92,6 @@ export default class ProjectDatabaseService {
           description: description,
           step_name: stepName,
           repo_name: repoName,
-          test_number: testNumber,
         },
       })
     } catch (error) {
