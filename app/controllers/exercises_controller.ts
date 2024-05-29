@@ -280,12 +280,13 @@ export default class ExercisesController {
       let data = {
         step_description: step.description,
         step_title: step.title,
-        step_test_number: step.test_number,
+        step_test_number: 0,
         step_all_tests_passed: true,
         step_tests: [],
       }
       for (let test of currentTeam.test) {
         if (test.step_name === step.step_name) {
+          data.step_test_number++
           if (!test.status_passed) {
             data.step_all_tests_passed = false
           }
