@@ -1,14 +1,11 @@
-import GiteaApiService, { GiteaProtectedBranch, GiteaWebhook } from '#services/gitea_api_service'
+import GiteaApiService from '#services/gitea_api_service'
 import WoodpeckerApiService from '#services/woodpecker_api_service'
 import ProjectDatabaseService from '#services/project_database_service'
 import { inject } from '@adonisjs/core'
 import { HttpContext } from '@adonisjs/core/http'
 import { CiTestsResultDto, CiTestsResultSchema } from '../dto/CiTestsResult.dto.js'
 import { GitEventResultDto, GitEventResultSchema } from '../dto/GitEventResult.dto.js'
-import { CreateStudentsRepoDto, CreateStudentsRepoSchema } from '../dto/CreateStudentsRepo.dto.js'
 import env from '#start/env'
-import UserDatabaseService from '#services/user_database_service'
-import { v4 as uuidv4 } from 'uuid'
 
 export default class ApiEndpointsController {
   private webhook_url: string = env.get('CRACKITO_URL') + env.get('CI_RESULTS_PATH')
@@ -201,82 +198,5 @@ export default class ApiEndpointsController {
     }
 
     response.send({ message: 'Members added successfully' })
-  }
-
-  async initGiteaProject(
-    repo_name: string,
-    newName: string,
-    members: Array<string>,
-    webhook: GiteaWebhook,
-    protection: GiteaProtectedBranch,
-    giteaApiService: GiteaApiService
-  ) {
-    await giteaApiService.getOWner()
-    let membersRepo
-    membersRepo = await giteaApiService.createRepoFromTemplate(repo_name, newName)
-
-    let repoName = membersRepo.data.name
-
-    for (let member of members) {
-      await giteaApiService.addMemberToRepository(repoName, member)
-    }
-    await giteaApiService.addWebhook(repoName, webhook)
-    await giteaApiService.protectBranch(repoName, protection)
-
-    return membersRepo
-  }
-
-  @inject()
-  async createStudentsProject({ request, response, logger, i18n }: HttpContext, giteaApiService: GiteaApiService, projectDatabaseService: ProjectDatabaseService, userDatabaseService: UserDatabaseService) {
-    const body = request.body()
-
-    let createStudentsRepoDto: CreateStudentsRepoDto
-    try {
-      createStudentsRepoDto = CreateStudentsRepoSchema.parse(body)
-    } catch (error) {
-      logger.info({ tag: '#A13F2F' }, 'Create Student Exercise validation failed')
-      response.badRequest({ message: 'Create Student Exercise validation failed', error: error })
-      return
-    }
-
-    let webhook: GiteaWebhook = {
-      url: body.webhook_url,
-      secret: '',
-    }
-
-    let protection: GiteaProtectedBranch = {
-      branch: body.protected.branch,
-      files: body.protected.files,
-    }
-
-    let newName
-
-    for (let team of body.teams) {
-      webhook.secret = uuidv4()
-      newName = `${body.name}-${team.join('-')}`
-      try {
-        await this.initGiteaProject(body.name, newName, team, webhook, protection, giteaApiService)
-      } catch (e) {
-        logger.info({ tag: '#DDA2FF' }, `Error while creating repo in gitea : ${JSON.stringify(e)}`)
-        response.status(e.status).send({ status_code: e.status, status_message: e.message })
-        return
-      }
-      const [code, message, title] = await projectDatabaseService.createTeam(newName, body.name, team, webhook.secret, userDatabaseService)
-      if (code !== 200) {
-        try {
-          // rollback create in gitea
-          await giteaApiService.deleteRepository(newName)
-        } catch (e2) {
-          logger.info({ tag: '#DFA2FF' }, `Error while rollback the creation of repo in gitea after database error : ${JSON.stringify(e2)}`)
-          response.status(e2.status).send({ status_code: e2.status, status_message: e2.message })
-          return
-        }
-        logger.info({ tag: '#DFA20F' }, 'Error while adding project to database, gitea rollback...')
-        response.status(code).send({status_code: code, status_message: i18n.t(`translate.${message}`), title: i18n.t(`translate.${title}`)})
-        return
-      }
-    }
-
-    response.status(200).send({ status_code: 200, status_message: 'Teams projects created successfully' })
   }
 }
