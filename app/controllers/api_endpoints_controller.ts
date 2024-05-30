@@ -128,7 +128,7 @@ export default class ApiEndpointsController {
       status_passed: t.status_passed,
     }))
 
-    // all test in request
+    // json formatted, all test in request
     let testsBody = body.steps.flatMap((s) =>
       s.tests.map((t2) => ({
         id_team: team.id_team,
@@ -141,12 +141,32 @@ export default class ApiEndpointsController {
       }))
     )
 
-    // intersec of both to get the test that have a changed state
+    // ----------------------------- 1 : create non existant steps received from json -----------------------------
+    // distinct intersection of json formatted and project steps to get the steps to add in database
+    // distinct because there are same step_name for multiple test
+    let stepsToCreate: Array<string> = Array.from(
+      new Set(
+        testsBody
+          .filter((t) => !team.project.step.find((t2) => t2.step_name === t.step_name))
+          .map((t) => t.step_name)
+      )
+    )
+
+    for (let stepName of stepsToCreate) {
+      const [code, message, title] = await projectDatabaseService.createStep(1, '<Temp title>', '<Temp description>', stepName, team.repo_name, 0)
+      if (code !== 200) {
+        logger.error({ tag: '#0932D0' }, `The step ${stepName} creation failed`)
+        return response.status(code).send({ status_code: code, status_message: message, title: title })
+      }
+    }
+
+    // ----------------------------- 2 : create non existant tests and existant tests with passed state changed -----------------------------
+    // intersection of json formatted and team tests to get the tests to add(if new)/change(if passed state change) in database
     let testsChanged = testsBody.filter((t) => {
       let matchedTest = testsTeam.find(
         (t2) => t2.step_name === t.step_name && t2.test_name === t.test_name
       )
-      return matchedTest && t.status_passed !== matchedTest.status_passed
+      return !matchedTest || (matchedTest && t.status_passed !== matchedTest.status_passed)
     })
 
     for (let test of testsChanged) {
@@ -160,12 +180,48 @@ export default class ApiEndpointsController {
         test.message
       )
       if (!update) {
-        logger.info({ tag: '#0932D0' }, 'One test update does not pass, potentially one test does not exist')
+        logger.error({ tag: '#0932D0' }, 'One test update does not pass, potentially one test does not exist')
         return response.internalServerError({ message: 'One test not found' })
       }
     }
 
-    return response.ok({ message: `${testsChanged.length} tests updated` })
+    // ----------------------------- 3 : delete existant steps not received from json -----------------------------
+    let testsToDelete = testsTeam.filter((t) => {
+      return !testsBody.some((t2) => t2.step_name === t.step_name && t2.test_name === t.test_name)
+    })
+    for (let test of testsToDelete) {
+      const [code, message, title] = await projectDatabaseService.deleteTest(
+        team.id_team,
+        team.repo_name,
+        test.step_name,
+        test.test_name
+      )
+      if (code !== 200) {
+        logger.error({ tag: '#0932D0' }, `The test ${test.test_name} deletion failed`)
+        return response.status(code).send({ status_code: code, status_message: message, title: title })
+      }
+    }
+
+    // ----------------------------- 4 : delete existant steps not received from json -----------------------------
+    let stepsToDelete: Array<string> = Array.from(
+      new Set(
+        team.project.step
+          .filter((t) => !testsBody.some((t2) => t2.step_name === t.step_name))
+          .map((t) => t.step_name)
+      )
+    )
+    for (let stepName of stepsToDelete) {
+      const [code, message, title] = await projectDatabaseService.deleteStep(
+        team.repo_name,
+        stepName
+      )
+      if (code !== 200) {
+        logger.error({ tag: '#0932D0' }, `The step ${step_name} deletion failed`)
+        return response.status(code).send({ status_code: code, status_message: message, title: title })
+      }
+    }
+
+    return response.ok({ message: `${testsChanged.length} tests added/updated, ${stepsToCreate.length} steps added, ${testsToDelete.length} tests deleted, ${stepsToDelete.length} steps deleted` })
   }
 
   @inject()

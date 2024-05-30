@@ -114,13 +114,8 @@ export default class ExercisesController {
 
     let project = { project: projectObject, leaderboard: [] }
 
-    let nbPointsProject = 0
-    for (let step of project.project.step) {
-      nbPointsProject += step.test_number * 4
-    }
-
     for (let team of project.project.team) {
-      let data = { id_team: team.id_team, teamMembers: [], gainedPoint: 0, maxPoint: nbPointsProject, percentFinished: 0 }
+      let data = { id_team: team.id_team, teamMembers: [], gainedPoint: 0, maxPoint: team.test.length * 4, percentFinished: 0 }
 
       for (let member of team.account_team) {
         data.teamMembers.push(member.account.Firstname + ' ' + member.account.Lastname)
@@ -129,21 +124,27 @@ export default class ExercisesController {
       // points gained by step
       let gainedPoints = 0
       for (let step of project.project.step) {
-        let nbPoints = step.test_number * 4
-
+        let nbTest = 0
         let nbPassedTest = 0
         for (let test of team.test) {
           if (test.step_name === step.step_name) {
+            nbTest++
             nbPassedTest += test.status_passed ? 1 : 0
           }
         }
 
-        let percentPassedTest = nbPassedTest / step.test_number
+        if (nbTest === 0) {
+          continue
+        }
+
+        let nbPoints = nbTest * 4
+
+        let percentPassedTest = nbPassedTest / nbTest
         gainedPoints += this.pointGainedFunction(percentPassedTest, nbPoints)
       }
 
       data.gainedPoint = Math.trunc(gainedPoints)
-      data.percentFinished = Math.trunc((gainedPoints / nbPointsProject) * 100)
+      data.percentFinished = Math.trunc((gainedPoints / data.maxPoint) * 100)
       project.leaderboard.push(data)
     }
 
@@ -279,12 +280,13 @@ export default class ExercisesController {
       let data = {
         step_description: step.description,
         step_title: step.title,
-        step_test_number: step.test_number,
+        step_test_number: 0,
         step_all_tests_passed: true,
         step_tests: [],
       }
       for (let test of currentTeam.test) {
         if (test.step_name === step.step_name) {
+          data.step_test_number++
           if (!test.status_passed) {
             data.step_all_tests_passed = false
           }

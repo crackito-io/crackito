@@ -1,5 +1,4 @@
 import { prisma } from '#config/app'
-import UserDatabaseService from './user_database_service.js'
 
 export default class ProjectDatabaseService {
   async getProjectFromRepoName(repo_name: string) {
@@ -19,6 +18,11 @@ export default class ProjectDatabaseService {
       },
       include: {
         test: true,
+        project: {
+          include: {
+            step: true,
+          },
+        },
       },
     })
     return team
@@ -41,11 +45,8 @@ export default class ProjectDatabaseService {
     message: string,
     detailed_message: string
   ): Promise<boolean> {
-    // everything is inserted when we trigger the pipeline for once
-    // we are sure this exists, we do not insert if update does not work
-    // if update does not work, it's a server error
     try {
-      await prisma.test.update({
+      await prisma.test.upsert({
         where: {
           id_team_repo_name_step_name_test_name: {
             id_team: id_team,
@@ -54,7 +55,16 @@ export default class ProjectDatabaseService {
             test_name: test_name,
           },
         },
-        data: {
+        update: {
+          status_passed: status_passed,
+          message: message,
+          detailed_message: detailed_message,
+        },
+        create: {
+          id_team: id_team,
+          repo_name: repo_name,
+          step_name: step_name,
+          test_name: test_name,
           status_passed: status_passed,
           message: message,
           detailed_message: detailed_message,
@@ -65,6 +75,66 @@ export default class ProjectDatabaseService {
     }
 
     return true
+  }
+
+  async createStep(
+    numOrder: number,
+    title: string,
+    description: string,
+    stepName: string,
+    repoName: string
+  ) {
+    try {
+      await prisma.step.create({
+        data: {
+          num_order: numOrder,
+          title: title,
+          description: description,
+          step_name: stepName,
+          repo_name: repoName,
+        },
+      })
+    } catch (error) {
+      return [500, 'internal_server_error', 'error']
+    }
+
+    return [200, 'ok', 'success']
+  }
+
+  async deleteStep(repoName: string, stepName: string) {
+    try {
+      await prisma.step.delete({
+        where: {
+          repo_name_step_name: {
+            repo_name: repoName,
+            step_name: stepName,
+          },
+        },
+      })
+    } catch (e) {
+      return [500, 'internal_server_error', 'error']
+    }
+
+    return [200, 'ok', 'success']
+  }
+
+  async deleteTest(idTeam: number, repoName: string, stepName: string, testName: string) {
+    try {
+      await prisma.test.delete({
+        where: {
+          id_team_repo_name_step_name_test_name: {
+            id_team: idTeam,
+            repo_name: repoName,
+            step_name: stepName,
+            test_name: testName,
+          },
+        },
+      })
+    } catch (e) {
+      return [500, 'internal_server_error', 'error']
+    }
+
+    return [200, 'ok', 'success']
   }
 
   async createTeam(
