@@ -4,6 +4,7 @@ import {
   ExternalAPIError,
   GitContentFileNotFound,
   GitRepositoryAlreadyExists,
+  GitRepositoryEmpty,
   GitRepositoryNotATemplate,
   GitRepositoryNotFound,
   UserNotFound,
@@ -105,6 +106,28 @@ export default class GiteaApiService {
         error,
         error.response.data.message
       )
+    }
+  }
+
+  async getLastCommit(repo_name: string) {
+    await this.getOwner()
+    await this.getRepository(repo_name)
+    const url = `/repos/${this.owner_name}/${repo_name}/commits`
+    try {
+      const result = await this.http_service.get(url)
+      return result.data[0]
+    } catch (error) {
+      console.log('ui')
+      let externalError: ExternalAPIError = new ExternalAPIError(
+        error.response.status,
+        error.response.data,
+        error,
+        error.response.data.message
+      )
+      if (error.response.status === 409) {
+        externalError.addErrorDetails(new GitRepositoryEmpty(repo_name))
+      }
+      throw externalError
     }
   }
 
