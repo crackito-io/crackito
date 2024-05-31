@@ -79,6 +79,7 @@ router
           })
           .use(middleware.permissions(['delete_users']))
         router.post('/createteams', [ProjectsController, 'createStudentsProject'])
+        router.post('/createproject', [ProjectsController, 'createProject'])
       })
       .prefix('/api')
     router

@@ -153,7 +153,7 @@ export default class ApiEndpointsController {
     )
 
     for (let stepName of stepsToCreate) {
-      const [code, message, title] = await projectDatabaseService.createStep(1, '<Temp title>', '<Temp description>', stepName, team.repo_name, 0)
+      const [code, message, title] = await projectDatabaseService.createStep(1, stepName, stepName, stepName, team.repo_name)
       if (code !== 200) {
         logger.error({ tag: '#0932D0' }, `The step ${stepName} creation failed`)
         return response.status(code).send({ status_code: code, status_message: message, title: title })
