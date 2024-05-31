@@ -44,7 +44,7 @@ model federation {
   organization       organization         @relation(fields: [id_organization], references: [id_organization], onDelete: Cascade, onUpdate: NoAction, map: "federation_ibfk_1")
   federation_account federation_account[]
 
-  @@index([id_organization], map: "federation_ibfk1")
+  @@index([id_organization], map: "id_organization")
 }
 
 model federation_account {
@@ -142,6 +142,7 @@ model project {
   status_open Boolean
   end_time    DateTime? @db.DateTime(0)
   id_account  Int?
+  token       String    @unique(map: "token") @db.VarChar(255)
   account     account?  @relation(fields: [id_account], references: [id_account], onUpdate: NoAction, map: "project_ibfk_1")
   step        step[]
   team        team[]
