@@ -50,28 +50,28 @@ export default class ProjectsController {
     }
 
     let webhook: GiteaWebhook = {
-      url: body.webhook_url,
+      url: createStudentsRepoDto.webhook_url,
       secret: '',
     }
 
     let protection: GiteaProtectedBranch = {
-      branch: body.protected.branch,
-      files: body.protected.files,
+      branch: createStudentsRepoDto.protected.branch,
+      files: createStudentsRepoDto.protected.files,
     }
 
     let newName
 
-    for (let team of body.teams) {
+    for (let team of createStudentsRepoDto.teams) {
       webhook.secret = uuidv4()
-      newName = `${body.name}-${team.join('-')}`
+      newName = `${createStudentsRepoDto.name}-${team.join('-')}`
       try {
-        await this.initGiteaProject(body.name, newName, team, webhook, protection, giteaApiService)
+        await this.initGiteaProject(createStudentsRepoDto.name, newName, team, webhook, protection, giteaApiService)
       } catch (e) {
         logger.info({ tag: '#DDA2FF' }, `Error while creating repo in gitea : ${JSON.stringify(e)}`)
         response.status(e.status).send({ status_code: e.status, status_message: e.message })
         return
       }
-      const [code, message, title] = await projectDatabaseService.createTeam(newName, body.name, team, webhook.secret, userDatabaseService)
+      const [code, message, title] = await projectDatabaseService.createTeam(newName, createStudentsRepoDto.name, team, webhook.secret, userDatabaseService)
       if (code !== 200) {
         try {
           // rollback create in gitea
@@ -102,6 +102,11 @@ export default class ProjectsController {
       logger.info({ tag: '#34452D' }, 'Create Exercise validation failed')
       response.badRequest({ message: 'Form not valid', error: error })
       return
+    }
+
+    let webhook: GiteaWebhook = {
+      url: createRepoDto.webhook_url,
+      secret: createRepoDto.token_project,
     }
 
     // transform project name to git convention
@@ -148,6 +153,14 @@ export default class ProjectsController {
         response.status(e.status).send({ status_code: e.status, status_message: e.message })
         return
       }
+    }
+
+    try {
+      await giteaApiService.addWebhook(repoName, webhook)
+    } catch (e) {
+      logger.info({ tag: '#FF0124' }, `Error while adding webhook to template repo in gitea : ${JSON.stringify(e)}`)
+      response.status(e.status).send({ status_code: e.status, status_message: e.message })
+      return
     }
 
     const [code, message, title] = await projectDatabaseService.createProject(

@@ -6,6 +6,7 @@ export const CreateRepoSchema = z.object({
   template: z.string().nullish(),
   limit_datetime: z.string().datetime(),
   owner_id: z.number(),
+  webhook_url: z.string(),
   token_project: z.string(),
 })
 

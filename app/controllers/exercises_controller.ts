@@ -6,6 +6,14 @@ import { team } from "@prisma/client";
 import { project } from "@prisma/client";
 import logger from "@adonisjs/core/services/logger";
 
+export type LeaderBoardElement = {
+  id_team: number
+  teamMembers: Array<string>
+  gainedPoint: number
+  maxPoint: number
+  percentFinished: number
+}
+
 export default class ExercisesController {
   async all(ctx: HttpContext) {
     // get user id
@@ -114,10 +122,10 @@ export default class ExercisesController {
 
     let project = { project: projectObject, leaderboard: [] }
 
-    for (let team of project.project.team) {
-      let data = { id_team: team.id_team, teamMembers: [], gainedPoint: 0, maxPoint: team.test.length * 4, percentFinished: 0 }
+    for (let projectTeam of project.project.team) {
+      let data: LeaderBoardElement = { id_team: projectTeam.id_team, teamMembers: [], gainedPoint: 0, maxPoint: 0, percentFinished: 0 }
 
-      for (let member of team.account_team) {
+      for (let member of projectTeam.account_team) {
         data.teamMembers.push(member.account.Firstname + ' ' + member.account.Lastname)
       }
 
@@ -126,7 +134,7 @@ export default class ExercisesController {
       for (let step of project.project.step) {
         let nbTest = 0
         let nbPassedTest = 0
-        for (let test of team.test) {
+        for (let test of projectTeam.test) {
           if (test.step_name === step.step_name) {
             nbTest++
             nbPassedTest += test.status_passed ? 1 : 0
@@ -138,6 +146,7 @@ export default class ExercisesController {
         }
 
         let nbPoints = nbTest * 4
+        data.maxPoint += nbPoints
 
         let percentPassedTest = nbPassedTest / nbTest
         gainedPoints += this.pointGainedFunction(percentPassedTest, nbPoints)
@@ -148,12 +157,14 @@ export default class ExercisesController {
       project.leaderboard.push(data)
     }
 
-    project.leaderboard.sort((a, b) => b.gainedPoint - a.gainedPoint)
+    project.leaderboard.sort(
+      (a: LeaderBoardElement, b: LeaderBoardElement) => b.gainedPoint - a.gainedPoint
+    )
 
     return project
   }
 
-  async headerBuilder(currentTeam: team, project: project, leaderboard: object[], ctx: HttpContext, idAccount: number) {
+  async headerBuilder(currentTeam: team, project: project, leaderboard: Array<LeaderBoardElement>, ctx: HttpContext, idAccount: number) {
     if (!currentTeam) {
       if (idAccount === project.id_account) {
         return {
@@ -188,7 +199,9 @@ export default class ExercisesController {
       title: project.name,
       rank: rankCurrentTeam,
       steps: totalStepFinished + '/' + project.step.length,
-      last_commit: this.getPrintableTime(Date.now() - currentTeam.last_commit.getTime(), ctx),
+      last_commit: currentTeam.last_commit
+        ? this.getPrintableTime(Date.now() - currentTeam.last_commit.getTime(), ctx)
+        : '-',
       status: project.status_open,
       status_team: currentTeam.status_project_finished,
       repo_name: project.repo_name,

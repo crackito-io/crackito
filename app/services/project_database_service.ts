@@ -16,10 +16,10 @@ export default class ProjectDatabaseService {
   }
 
   /**
-   * Get team from unique column token
+   * Get team from unique column webhook_secret(token)
    */
   async getTeamFromToken(token: string) {
-    let team = await prisma.team.findFirst({
+    return await prisma.team.findFirst({
       where: {
         webhook_secret: token,
       },
@@ -32,7 +32,20 @@ export default class ProjectDatabaseService {
         },
       },
     })
-    return team
+  }
+
+  /**
+   * Get project from unique column token
+   */
+  async getProjectFromToken(token: string) {
+    return await prisma.project.findFirst({
+      where: {
+        token: token,
+      },
+      include: {
+        step: true,
+      },
+    })
   }
 
   /**
@@ -245,6 +258,25 @@ export default class ProjectDatabaseService {
       } catch (e2) {
         return [500, 'internal_server_error', 'error']
       }
+    }
+    return [200, 'ok', 'success']
+  }
+
+  /**
+   * Update team last commit in database
+   */
+  async updateTeamLastCommit(idTeam: number) {
+    try {
+      await prisma.team.update({
+        where: {
+          id_team: idTeam,
+        },
+        data: {
+          last_commit: new Date(),
+        },
+      })
+    } catch (e) {
+      return [500, 'internal_server_error', 'error']
     }
     return [200, 'ok', 'success']
   }

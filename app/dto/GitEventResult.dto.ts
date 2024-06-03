@@ -47,7 +47,7 @@ const RepositorySchema = z.object({
   id: z.number(),
   owner: RepositoryOwnerSchema.nullish(),
   name: z.string(),
-  full_name: z.string().nullish(),
+  full_name: z.string(),
   description: z.string().nullish(),
   empty: z.boolean().nullish(),
   private: z.boolean().nullish(),
