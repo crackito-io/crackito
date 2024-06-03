@@ -176,6 +176,9 @@
     "user_not_found_username":"User not found",
     "project_not_exists":"Project does not exist",
     "team_already_exists":"Team already exists",
+    "project_already_exists":"Project already exists",
+    "token_already_exists": "Token already token by another project",
     "user_not_found":"Gitea user not found in database",
+    "ownerid_not_exists":"The user you assign as owner does not exist",
     "ok":"OK"
 }

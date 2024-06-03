@@ -79,6 +79,7 @@ router
           })
           .use(middleware.permissions(['delete_users']))
         router.post('/createteams', [ProjectsController, 'createStudentsProject'])
+        router.post('/createproject', [ProjectsController, 'createProject'])
       })
       .prefix('/api')
     router
@@ -115,6 +116,7 @@ router
       .group(() => {
         router.post('/git-event', [ApiEndpointsController, 'gitEvent'])
         router.post('/ci-result/', [ApiEndpointsController, 'ciResult'])
+        router.post('/ci-result-owner/', [ApiEndpointsController, 'ciResultOwner'])
         router
           .group(() => {
             router.post('/', [ApiEndpointsController, 'createRepo'])

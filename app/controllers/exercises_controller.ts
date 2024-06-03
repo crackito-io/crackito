@@ -2,9 +2,70 @@ import { prisma } from "#config/app";
 import { HttpContext } from "@adonisjs/core/http";
 import { jwtDecode } from "jwt-decode";
 import { ExercisesRouteSchema } from "../dto/ExercisesRoute.dto.js";
-import { team } from "@prisma/client";
+import { Prisma, team } from "@prisma/client";
 import { project } from "@prisma/client";
 import logger from "@adonisjs/core/services/logger";
+
+export type LeaderBoardElement = {
+  id_team: number
+  teamMembers: Array<string>
+  gainedPoint: number
+  maxPoint: number
+  percentFinished: number
+}
+
+export type LeaderBoard = Array<LeaderBoardElement>
+
+type ProjectWithRelations = Prisma.projectGetPayload<{
+  include: {
+    step: true
+    team: {
+      include: {
+        test: true
+        account_team: {
+          include: {
+            account: true
+          }
+        }
+      }
+    }
+  }
+}>
+
+type TeamWithRelations = Prisma.teamGetPayload<{
+  include: {
+    test: true
+    account_team: {
+      include: {
+        account: true
+      }
+    }
+  }
+}>
+
+export type ProjectInfo = {
+  currentProject: ProjectWithRelations
+  leaderboard: LeaderBoard
+}
+
+export type Exercise = {
+  title: string | null
+  description: string | null
+  status_open: boolean
+  status_team_finished: boolean | null
+  repo_name: string
+}
+
+export type ExerciseList = Array<Exercise>
+
+export type ExerciseOwn = {
+  title: string | null
+  description: string | null
+  status_open: boolean
+  repo_name: string
+}
+
+export type ExerciseOwnList = Array<ExerciseOwn>
 
 export default class ExercisesController {
   async all(ctx: HttpContext) {
@@ -31,7 +92,7 @@ export default class ExercisesController {
     })
 
     // get list exercise
-    let exerciseList: object[] = []
+    let exerciseList: ExerciseList = []
 
     userTeams.forEach((el) => {
       exerciseList.push({
@@ -53,7 +114,7 @@ export default class ExercisesController {
       },
     })
 
-    let exerciseOwnedList: object[] = []
+    let exerciseOwnedList: ExerciseOwnList = []
 
     exerciseOwned.forEach((e) => {
       exerciseOwnedList.push({
@@ -112,21 +173,31 @@ export default class ExercisesController {
       },
     })
 
-    let project = { project: projectObject, leaderboard: [] }
+    if (projectObject === null) {
+      return null
+    }
 
-    for (let team of project.project.team) {
-      let data = { id_team: team.id_team, teamMembers: [], gainedPoint: 0, maxPoint: team.test.length * 4, percentFinished: 0 }
+    let projectInfo: ProjectInfo = { currentProject: projectObject, leaderboard: [] }
 
-      for (let member of team.account_team) {
+    for (let projectTeam of projectInfo.currentProject.team) {
+      let data: LeaderBoardElement = {
+        id_team: projectTeam.id_team,
+        teamMembers: [],
+        gainedPoint: 0,
+        maxPoint: 0,
+        percentFinished: 0,
+      }
+
+      for (let member of projectTeam.account_team) {
         data.teamMembers.push(member.account.Firstname + ' ' + member.account.Lastname)
       }
 
       // points gained by step
       let gainedPoints = 0
-      for (let step of project.project.step) {
+      for (let step of projectInfo.currentProject.step) {
         let nbTest = 0
         let nbPassedTest = 0
-        for (let test of team.test) {
+        for (let test of projectTeam.test) {
           if (test.step_name === step.step_name) {
             nbTest++
             nbPassedTest += test.status_passed ? 1 : 0
@@ -138,6 +209,7 @@ export default class ExercisesController {
         }
 
         let nbPoints = nbTest * 4
+        data.maxPoint += nbPoints
 
         let percentPassedTest = nbPassedTest / nbTest
         gainedPoints += this.pointGainedFunction(percentPassedTest, nbPoints)
@@ -145,25 +217,27 @@ export default class ExercisesController {
 
       data.gainedPoint = Math.trunc(gainedPoints)
       data.percentFinished = Math.trunc((gainedPoints / data.maxPoint) * 100)
-      project.leaderboard.push(data)
+      projectInfo.leaderboard.push(data)
     }
 
-    project.leaderboard.sort((a, b) => b.gainedPoint - a.gainedPoint)
+    projectInfo.leaderboard.sort(
+      (a: LeaderBoardElement, b: LeaderBoardElement) => b.gainedPoint - a.gainedPoint
+    )
 
-    return project
+    return projectInfo
   }
 
-  async headerBuilder(currentTeam: team, project: project, leaderboard: object[], ctx: HttpContext, idAccount: number) {
+  async headerBuilder(currentTeam: TeamWithRelations, currentProject: ProjectWithRelations, leaderboard: LeaderBoard, ctx: HttpContext, idAccount: number) {
     if (!currentTeam) {
-      if (idAccount === project.id_account) {
+      if (idAccount === currentProject.id_account) {
         return {
-          title: project.name,
+          title: currentProject.name,
           rank: '-',
-          steps: '-/' + project.step.length,
+          steps: '-/' + currentProject.step.length,
           last_commit: '-',
-          status: project.status_open,
+          status: currentProject.status_open,
           status_team: true,
-          repo_name: project.repo_name,
+          repo_name: currentProject.repo_name,
         }
       }
       logger.info({ tag: '#4411DA' }, 'User not involved in exercise, or not owner of the exercise, redirect to the previous page')
@@ -183,15 +257,17 @@ export default class ExercisesController {
         stepNotFinished.add(test.step_name)
       }
     }
-    let totalStepFinished = project.step.length - stepNotFinished.size
+    let totalStepFinished = currentProject.step.length - stepNotFinished.size
     return {
-      title: project.name,
+      title: currentProject.name,
       rank: rankCurrentTeam,
-      steps: totalStepFinished + '/' + project.step.length,
-      last_commit: this.getPrintableTime(Date.now() - currentTeam.last_commit.getTime(), ctx),
-      status: project.status_open,
+      steps: totalStepFinished + '/' + currentProject.step.length,
+      last_commit: currentTeam.last_commit
+        ? this.getPrintableTime(Date.now() - currentTeam.last_commit.getTime(), ctx)
+        : '-',
+      status: currentProject.status_open,
       status_team: currentTeam.status_project_finished,
-      repo_name: project.repo_name,
+      repo_name: currentProject.repo_name,
     }
   }
 
@@ -230,19 +306,28 @@ export default class ExercisesController {
       return ctx.response.redirect().back()
     }
 
-    let project = await this.getLeaderBoard(ctx.params.repo_name)
-    let currentTeam = project.project.team.find((e) =>
+    let projectInfo = await this.getLeaderBoard(ctx.params.repo_name)
+    if (projectInfo === null) {
+      logger.info({ tag: '#15FF11' }, 'Project does not exist, redirect to the previous page')
+      ctx.session.flash('notifications', {
+        type: 'danger',
+        title: ctx.i18n.t('translate.error'),
+        message: ctx.i18n.t('translate.exercise_not_exist_error'),
+      })
+      return ctx.response.redirect().back()
+    }
+    let currentTeam = projectInfo.currentProject.team.find((e) =>
       e.account_team.find((f) => f.id_account === idAccount)
     )
 
-    let header = await this.headerBuilder(currentTeam, project.project, project.leaderboard, ctx, idAccount)
+    let header = await this.headerBuilder(currentTeam, projectInfo.currentProject, projectInfo.leaderboard, ctx, idAccount)
     if (!header) {
       return ctx.response.redirect().back()
     }
 
     ctx.view.share({ ...header })
 
-    return ctx.view.render('features/exercise/exercise_details', { project_description: project.project.description })
+    return ctx.view.render('features/exercise/exercise_details', { project_description: projectInfo.currentProject.description })
   }
 
   async scoreboard(ctx: HttpContext) {
@@ -255,12 +340,21 @@ export default class ExercisesController {
       return ctx.response.redirect().back()
     }
 
-    let project = await this.getLeaderBoard(ctx.params.repo_name)
-    let currentTeam = project.project.team.find((e) =>
+    let projectInfo = await this.getLeaderBoard(ctx.params.repo_name)
+    if (projectInfo === null) {
+      logger.info({ tag: '#15FF11' }, 'Project does not exist, redirect to the previous page')
+      ctx.session.flash('notifications', {
+        type: 'danger',
+        title: ctx.i18n.t('translate.error'),
+        message: ctx.i18n.t('translate.exercise_not_exist_error'),
+      })
+      return ctx.response.redirect().back()
+    }
+    let currentTeam = projectInfo.currentProject.team.find((e) =>
       e.account_team.find((f) => f.id_account === idAccount)
     )
 
-    let header = await this.headerBuilder(currentTeam, project.project, project.leaderboard, ctx, idAccount)
+    let header = await this.headerBuilder(currentTeam, projectInfo.currentProject, projectInfo.leaderboard, ctx, idAccount)
     if (!header) {
       return ctx.response.redirect().back()
     }
@@ -269,12 +363,12 @@ export default class ExercisesController {
 
     // view as project owner
     if (!currentTeam) {
-      return ctx.view.render('features/exercise/exercise_scoreboard', { project_leaderboard: project.leaderboard, userProgress: null })
+      return ctx.view.render('features/exercise/exercise_scoreboard', { project_leaderboard: projectInfo.leaderboard, userProgress: null })
     }
 
     let userProgress = []
 
-    let projectSteps = project.project.step.sort((a, b) => a.num_order - b.num_order)
+    let projectSteps = projectInfo.currentProject.step.sort((a, b) => a.num_order - b.num_order)
 
     for (let step of projectSteps) {
       let data = {
@@ -297,7 +391,7 @@ export default class ExercisesController {
       userProgress.push(data)
     }
 
-    return ctx.view.render('features/exercise/exercise_scoreboard', { project_leaderboard: project.leaderboard, userProgress: userProgress })
+    return ctx.view.render('features/exercise/exercise_scoreboard', { project_leaderboard: projectInfo.leaderboard, userProgress: userProgress })
   }
 
   async helper(ctx: HttpContext) {
@@ -310,12 +404,21 @@ export default class ExercisesController {
       return ctx.response.redirect().back()
     }
 
-    let project = await this.getLeaderBoard(ctx.params.repo_name)
-    let currentTeam = project.project.team.find((e) =>
+    let projectInfo = await this.getLeaderBoard(ctx.params.repo_name)
+    if (projectInfo === null) {
+      logger.info({ tag: '#15FF11' }, 'Project does not exist, redirect to the previous page')
+      ctx.session.flash('notifications', {
+        type: 'danger',
+        title: ctx.i18n.t('translate.error'),
+        message: ctx.i18n.t('translate.exercise_not_exist_error'),
+      })
+      return ctx.response.redirect().back()
+    }
+    let currentTeam = projectInfo.currentProject.team.find((e) =>
       e.account_team.find((f) => f.id_account === idAccount)
     )
 
-    let header = await this.headerBuilder(currentTeam, project.project, project.leaderboard, ctx, idAccount)
+    let header = await this.headerBuilder(currentTeam, projectInfo.currentProject, projectInfo.leaderboard, ctx, idAccount)
     if (!header) {
       return ctx.response.redirect().back()
     }
@@ -335,12 +438,21 @@ export default class ExercisesController {
       return ctx.response.redirect().back()
     }
 
-    let project = await this.getLeaderBoard(ctx.params.repo_name)
-    let currentTeam = project.project.team.find((e) =>
+    let projectInfo = await this.getLeaderBoard(ctx.params.repo_name)
+    if (projectInfo === null) {
+      logger.info({ tag: '#15FF11' }, 'Project does not exist, redirect to the previous page')
+      ctx.session.flash('notifications', {
+        type: 'danger',
+        title: ctx.i18n.t('translate.error'),
+        message: ctx.i18n.t('translate.exercise_not_exist_error'),
+      })
+      return ctx.response.redirect().back()
+    }
+    let currentTeam = projectInfo.currentProject.team.find((e) =>
       e.account_team.find((f) => f.id_account === idAccount)
     )
 
-    let header = await this.headerBuilder(currentTeam, project.project, project.leaderboard, ctx, idAccount)
+    let header = await this.headerBuilder(currentTeam, projectInfo.currentProject, projectInfo.leaderboard, ctx, idAccount)
     if (!header) {
       return ctx.response.redirect().back()
     }

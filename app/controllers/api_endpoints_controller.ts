@@ -91,6 +91,11 @@ export default class ApiEndpointsController {
       repoId = repo.id
     }
 
+    const [code, message, title] = await projectDatabaseService.updateTeamLastCommit(team.id_team)
+    if (code !== 200) {
+      logger.error({ tag: '#DFA20F' }, 'Error while updating last commit team to database')
+    }
+
     try {
       await woodpeckerApiService.triggerPipeline(repoId, defaultBranch)
     } catch (error4) {
@@ -153,9 +158,9 @@ export default class ApiEndpointsController {
     )
 
     for (let stepName of stepsToCreate) {
-      const [code, message, title] = await projectDatabaseService.createStep(1, '<Temp title>', '<Temp description>', stepName, team.repo_name, 0)
+      const [code, message, title] = await projectDatabaseService.createStep(1, stepName, stepName, stepName, team.repo_name)
       if (code !== 200) {
-        logger.error({ tag: '#0932D0' }, `The step ${stepName} creation failed`)
+        logger.error({ tag: '#09C2DC' }, `The step ${stepName} creation failed`)
         return response.status(code).send({ status_code: code, status_message: message, title: title })
       }
     }
@@ -180,7 +185,7 @@ export default class ApiEndpointsController {
         test.message
       )
       if (!update) {
-        logger.error({ tag: '#0932D0' }, 'One test update does not pass, potentially one test does not exist')
+        logger.error({ tag: '#0FF241' }, 'One test update does not pass, potentially one test does not exist')
         return response.internalServerError({ message: 'One test not found' })
       }
     }
@@ -197,7 +202,7 @@ export default class ApiEndpointsController {
         test.test_name
       )
       if (code !== 200) {
-        logger.error({ tag: '#0932D0' }, `The test ${test.test_name} deletion failed`)
+        logger.error({ tag: '#0F32D0' }, `The test ${test.test_name} deletion failed`)
         return response.status(code).send({ status_code: code, status_message: message, title: title })
       }
     }
@@ -216,12 +221,86 @@ export default class ApiEndpointsController {
         stepName
       )
       if (code !== 200) {
-        logger.error({ tag: '#0932D0' }, `The step ${step_name} deletion failed`)
+        logger.error({ tag: '#09F2D0' }, `The step ${stepName} deletion failed`)
         return response.status(code).send({ status_code: code, status_message: message, title: title })
       }
     }
 
     return response.ok({ message: `${testsChanged.length} tests added/updated, ${stepsToCreate.length} steps added, ${testsToDelete.length} tests deleted, ${stepsToDelete.length} steps deleted` })
+  }
+
+  @inject()
+  async ciResultOwner({ request, response, logger }: HttpContext, projectDatabaseService: ProjectDatabaseService) {
+    const body = request.body()
+
+    let ciTestsResultDto: CiTestsResultDto
+    try {
+      ciTestsResultDto = await CiTestsResultSchema.parseAsync(body)
+    } catch (error) {
+      logger.info({ tag: '#F35F2F' }, 'CI tests results validation failed')
+      response.badRequest({ message: 'CI tests results validation failed', error: error })
+      return
+    }
+
+    // not verif in dto, otherwise there would be 2 requests (one verif and one to get the team)
+    let project = await projectDatabaseService.getProjectFromToken(ciTestsResultDto.token)
+
+    if (project === null) {
+      logger.info({ tag: '#CEF12F' }, 'Token not associated to a project')
+      return response.badRequest({ message: 'Token is not associated to a project' })
+    }
+
+    // json formatted, all test in request
+    let testsBody = ciTestsResultDto.steps.flatMap((s) =>
+      s.tests.map((t2) => ({
+        repo_name: project.repo_name,
+        step_name: s.name,
+        test_name: t2.name,
+        status_passed: t2.passed,
+        error: t2.passed ? 'OK' : t2.error,
+        message: t2.passed ? null : t2.message,
+      }))
+    )
+
+    // ----------------------------- 1 : create non existant steps received from json -----------------------------
+    // distinct intersection of json formatted and project steps to get the steps to add in database
+    // distinct because there are same step_name for multiple test
+    let stepsToCreate: Array<string> = Array.from(
+      new Set(
+        testsBody
+          .filter((t) => !project.step.find((t2) => t2.step_name === t.step_name))
+          .map((t) => t.step_name)
+      )
+    )
+
+    for (let stepName of stepsToCreate) {
+      const [code, message, title] = await projectDatabaseService.createStep(1, stepName, stepName, stepName, project.repo_name)
+      if (code !== 200) {
+        logger.error({ tag: '#F945D0' }, `The step ${stepName} creation failed`)
+        return response.status(code).send({ status_code: code, status_message: message, title: title })
+      }
+    }
+
+    // ----------------------------- 2 : delete existant steps not received from json -----------------------------
+    let stepsToDelete: Array<string> = Array.from(
+      new Set(
+        project.step
+          .filter((t) => !testsBody.some((t2) => t2.step_name === t.step_name))
+          .map((t) => t.step_name)
+      )
+    )
+    for (let stepName of stepsToDelete) {
+      const [code, message, title] = await projectDatabaseService.deleteStep(
+        project.repo_name,
+        stepName
+      )
+      if (code !== 200) {
+        logger.error({ tag: '#053DD0' }, `The step ${stepName} deletion failed`)
+        return response.status(code).send({ status_code: code, status_message: message, title: title })
+      }
+    }
+
+    return response.ok({ message: `${stepsToCreate.length} steps added, ${stepsToDelete.length} steps deleted` })
   }
 
   @inject()

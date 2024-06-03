@@ -59,6 +59,12 @@ export class GitRepositoryNotATemplate extends GitRepositoryError {
   }
 }
 
+export class GitRepositoryEmpty extends GitRepositoryError {
+  constructor(repo: string) {
+    super(repo, 'repo_empty')
+  }
+}
+
 export class GitContentFileNotFound implements IsPrintableErrorMessage {
   constructor(
     private repo: string,

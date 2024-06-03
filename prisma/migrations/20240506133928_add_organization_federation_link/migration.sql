@@ -8,7 +8,7 @@
 ALTER TABLE `federation` ADD COLUMN `id_organization` INTEGER NOT NULL;
 
 -- CreateIndex
-CREATE INDEX `federation_ibfk1` ON `federation`(`id_organization`);
+CREATE INDEX `id_organization` ON `federation`(`id_organization`);
 
 -- AddForeignKey
-ALTER TABLE `federation` ADD CONSTRAINT `federation_ibfk1` FOREIGN KEY (`id_organization`) REFERENCES `organization`(`id_organization`) ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE `federation` ADD CONSTRAINT `federation_ibfk_1` FOREIGN KEY (`id_organization`) REFERENCES `organization`(`id_organization`) ON DELETE CASCADE ON UPDATE NO ACTION;
