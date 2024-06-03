@@ -15,23 +15,23 @@ export default class AuthMiddleware {
           .status(401)
           .send({ status_code: 401, status_message: i18n.t('translate.not_authorized_error'), title: i18n.t('translate.error') })
       } else {
-        logger.info({ tag: '#F80F1A' }, 'JWT Token is null, redirection to the login page')
+        logger.info({ tag: '#40C223' }, 'JWT Token is null, redirection to the login page')
         return response.redirect().toPath('/login')
       }
     }
 
     // if jwt signature is valid
     try {
-      jwt.verify(jwtToken, env.get('APP_KEY'));
+      jwt.verify(jwtToken, env.get('APP_KEY'))
       logger.info({ tag: '#73753D' }, 'JWT is valid, decode and send to the next')
     } catch (err) {
       if (request.ajax()) {
-        logger.info({ tag: '#F80F1A' }, 'JWT Token is null and req is ajax, sending 401 to the current page')
+        logger.info({ tag: '#0012A5' }, 'JWT Token is null and req is ajax, sending 401 to the current page')
         return response
           .status(401)
           .send({ status_code: 401, status_message: i18n.t('translate.not_authorized_error'), title: i18n.t('translate.error') })
       } else {
-        logger.info({ tag: '#F80F1A' }, 'JWT Token is null, redirection to the login page')
+        logger.info({ tag: '#F801AA' }, 'JWT Token is not valid, redirection to the login page')
         response.redirect().toPath('/login')
       }
       return
