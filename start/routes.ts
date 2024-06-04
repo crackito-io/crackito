@@ -115,6 +115,7 @@ router
     router
       .group(() => {
         router.post('/git-event', [ApiEndpointsController, 'gitEvent'])
+        router.post('/git-event-owner', [ApiEndpointsController, 'gitEventOwner'])
         router.post('/ci-result/', [ApiEndpointsController, 'ciResult'])
         router.post('/ci-result-owner/', [ApiEndpointsController, 'ciResultOwner'])
         router
