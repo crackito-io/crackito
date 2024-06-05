@@ -23,12 +23,11 @@ function saveText(step_name, type) {
   textElement.classList.remove('d-none')
 
   editTitleDescriptionStepXHR(
-    'template2',
+    repo_name,
     step_name,
     type === 'title' ? inputElement.value : '',
     type === 'description' ? inputElement.value : ''
   ).then((data) => {
-    console.log(data)
     if (Array.isArray(data)) {
       let interval = 0
       data.forEach((element) => {
