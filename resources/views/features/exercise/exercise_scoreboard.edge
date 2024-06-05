@@ -63,7 +63,24 @@
                     @else
                     <i class="task-icon bg-danger"></i>
                     @endif
-                    <h5 class="text-muted">{{ progress.step_title }} ({{ progress.step_test_number }} {{ t('translate.test_to_pass_text') }})</h5>
+
+                    @if(viewAsAdmin)
+                    <h5 class="text-muted">
+                      <div id="editable-text{{ progress.step_name }}-title" class="editable-text">
+                        <span class="text border border-4" style="cursor: pointer;" onclick="editText('{{ progress.step_name }}', 'title')">{{ progress.step_title }}</span>
+                        <input type="text" class="form-control edit-input d-none" onblur="saveText('{{ progress.step_name }}', 'title')" />
+                      </div>
+                    </h5>
+                    <p>
+                      <div id="editable-text{{ progress.step_name }}-description" class="editable-text">
+                        <span class="text border border-4" style="cursor: pointer;" onclick="editText('{{ progress.step_name }}', 'description')">{{ progress.step_description }}</span>
+                        <input type="text" class="form-control edit-input d-none" onblur="saveText('{{ progress.step_name }}', 'description')" />
+                      </div>
+                    </p>
+                    @else
+                    <h5 class="text-muted">
+                      {{ progress.step_title }} ({{ progress.step_test_number }} {{ t('translate.test_to_pass_text') }})
+                    </h5>
                     <p>{{ progress.step_description }}</p>
                     <ul class="list-unstyled rounded-10">
                       <div class="list-group">
@@ -78,6 +95,7 @@
                         @endeach
                       </div>
                     </ul>
+                    @endif
                   </li>
                   @endeach
 
@@ -87,10 +105,7 @@
     </div>
     @endif
 </div>
-<script>
-function completeErrorPopUp(content) {
-  document.getElementById('complete-error-content').innerHTML = content
-}
-</script>
+<script src="/js/crackito.js"></script>
+<script src="/js/exercise-scoreboard.js"></script>
 @end
 @end

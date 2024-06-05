@@ -27,3 +27,20 @@ async function createAccountXHR(email, password, confirmPassword, firstname, las
     return response.json()
   })
 }
+
+async function editTitleDescriptionStepXHR(repo_name, step_name, title, description) {
+  return fetch(`/exercises/${repo_name}/scoreboard`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Requested-With': 'xmlhttprequest',
+    },
+    body: JSON.stringify({
+      step_name: step_name,
+      title: title,
+      description: description,
+    }),
+  }).then((response) => {
+    return response.json()
+  })
+}

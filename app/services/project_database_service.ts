@@ -1,7 +1,40 @@
 import { prisma } from '#config/app'
 import UserDatabaseService from './user_database_service.js'
 
+type TitleDescription = {
+  title?: string
+  description?: string
+}
+
 export default class ProjectDatabaseService {
+  async editTitleAndDescriptionStep(repoName: string, stepName: string, title: string, description: string) {
+    let data: TitleDescription = {}
+    if (title) {
+      data.title = title
+    }
+
+    if (description) {
+      data.description = description
+    }
+
+    try {
+      await prisma.step.update({
+        where: {
+          repo_name_step_name: {
+            repo_name: repoName,
+            step_name: stepName,
+          },
+        },
+        data: data,
+      })
+    } catch (e) {
+      // TODO: manage step_name not existing case
+      return false
+    }
+
+    return true
+  }
+
   /**
    * Get project from unique column repo_name
    */
