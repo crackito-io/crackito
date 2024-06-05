@@ -32,6 +32,7 @@ router
     router.on('/exercises/:repo_name').redirect('/exercises/:repo_name/details')
     router.get('/exercises/:repo_name/details', [ExercisesController, 'details'])
     router.get('/exercises/:repo_name/scoreboard', [ExercisesController, 'scoreboard'])
+    router.patch('/exercises/:repo_name/scoreboard', [ExercisesController, 'patchTitleDescription'])
     router.get('/exercises/:repo_name/helper', [ExercisesController, 'helper'])
     router.get('/exercises/:repo_name/logs', [ExercisesController, 'logs'])
 

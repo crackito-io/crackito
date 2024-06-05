@@ -180,5 +180,7 @@
     "token_already_exists": "Token already token by another project",
     "user_not_found":"Gitea user not found in database",
     "ownerid_not_exists":"The user you assign as owner does not exist",
-    "ok":"OK"
+    "ok":"OK",
+    "not_admin": "You are not able to do that you're not the owner of the project!",
+    "step_updated_success": "The exercise has been updated"
 }

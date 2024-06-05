@@ -5,6 +5,8 @@ import { ExercisesRouteSchema } from "../dto/ExercisesRoute.dto.js";
 import { Prisma, team } from "@prisma/client";
 import { project } from "@prisma/client";
 import logger from "@adonisjs/core/services/logger";
+import ProjectDatabaseService from "#services/project_database_service";
+import { inject } from "@adonisjs/core";
 
 export type LeaderBoardElement = {
   id_team: number
@@ -68,6 +70,45 @@ export type ExerciseOwn = {
 export type ExerciseOwnList = Array<ExerciseOwn>
 
 export default class ExercisesController {
+  @inject()
+  async patchTitleDescription(ctx: HttpContext, projectDatabaseService: ProjectDatabaseService) {
+    let body = ctx.request.body()
+
+    const jwtToken: any = jwtDecode(ctx.request.cookie('jwt'))
+
+    const idAccount = jwtToken.id_account
+
+    let conform = await this.checkConformRequest(ctx, idAccount)
+    if (!conform) {
+      return ctx.response.badRequest({ message: 'Not conform' })
+    }
+
+    let projectInfo = await this.getLeaderBoard(ctx.params.repo_name)
+    if (projectInfo === null) {
+      logger.info({ tag: '#15F411' }, 'Project does not exist, redirect to the previous page')
+      return ctx.response.badRequest({ message: ctx.i18n.t('translate.project_not_exists') })
+    }
+
+    let admin: boolean = idAccount === projectInfo.currentProject.id_account
+
+    if (admin) {
+      let edit = await projectDatabaseService.editTitleAndDescriptionStep(
+        ctx.params.repo_name,
+        body.step_name,
+        body.title,
+        body.description
+      )
+      if (!edit) {
+        logger.info({ tag: '#BCD4FF' }, 'Error while editing title/description of project in database')
+        return ctx.response.internalServerError({ status_code: 500, status_message: ctx.i18n.t('translate.internal_server_error'), title: ctx.i18n.t('translate.error') })
+      }
+      logger.info({ tag: '#2DF441' }, 'Rename project properties success')
+      return ctx.response.ok({ status_code: 200, status_message: ctx.i18n.t('translate.step_updated_success'), title: ctx.i18n.t('translate.success') })
+    } else {
+      logger.info({ tag: '#ACF411' }, 'Not allowed to rename project properties')
+      return ctx.response.badRequest({ status_code: 401, status_message: ctx.i18n.t('translate.not_admin'), title: ctx.i18n.t('translate.error') })
+    }
+  }
   async all(ctx: HttpContext) {
     // get user id
     const jwtToken: any = jwtDecode(ctx.request.cookie('jwt'))
@@ -227,9 +268,9 @@ export default class ExercisesController {
     return projectInfo
   }
 
-  async headerBuilder(currentTeam: TeamWithRelations, currentProject: ProjectWithRelations, leaderboard: LeaderBoard, ctx: HttpContext, idAccount: number) {
+  async headerBuilder(currentTeam: TeamWithRelations, currentProject: ProjectWithRelations, leaderboard: LeaderBoard, ctx: HttpContext, isAdmin: boolean) {
     if (!currentTeam) {
-      if (idAccount === currentProject.id_account) {
+      if (isAdmin) {
         return {
           title: currentProject.name,
           rank: '-',
@@ -320,7 +361,9 @@ export default class ExercisesController {
       e.account_team.find((f) => f.id_account === idAccount)
     )
 
-    let header = await this.headerBuilder(currentTeam, projectInfo.currentProject, projectInfo.leaderboard, ctx, idAccount)
+    let admin: boolean = idAccount === projectInfo.currentProject.id_account
+
+    let header = await this.headerBuilder(currentTeam, projectInfo.currentProject, projectInfo.leaderboard, ctx, admin)
     if (!header) {
       return ctx.response.redirect().back()
     }
@@ -354,17 +397,14 @@ export default class ExercisesController {
       e.account_team.find((f) => f.id_account === idAccount)
     )
 
-    let header = await this.headerBuilder(currentTeam, projectInfo.currentProject, projectInfo.leaderboard, ctx, idAccount)
+    let admin: boolean = idAccount === projectInfo.currentProject.id_account
+
+    let header = await this.headerBuilder(currentTeam, projectInfo.currentProject, projectInfo.leaderboard, ctx, admin)
     if (!header) {
       return ctx.response.redirect().back()
     }
 
     ctx.view.share({ ...header })
-
-    // view as project owner
-    if (!currentTeam) {
-      return ctx.view.render('features/exercise/exercise_scoreboard', { project_leaderboard: projectInfo.leaderboard, userProgress: null })
-    }
 
     let userProgress = []
 
@@ -372,26 +412,29 @@ export default class ExercisesController {
 
     for (let step of projectSteps) {
       let data = {
+        step_name: step.step_name,
         step_description: step.description,
         step_title: step.title,
         step_test_number: 0,
         step_all_tests_passed: true,
         step_tests: [],
       }
-      for (let test of currentTeam.test) {
-        if (test.step_name === step.step_name) {
-          data.step_test_number++
-          if (!test.status_passed) {
-            data.step_all_tests_passed = false
+      if (currentTeam) {
+        for (let test of currentTeam.test) {
+          if (test.step_name === step.step_name) {
+            data.step_test_number++
+            if (!test.status_passed) {
+              data.step_all_tests_passed = false
+            }
+            data.step_tests.push({name:test.test_name, message: test.message, detailed_message:test.detailed_message, passed:test.status_passed})
           }
-          data.step_tests.push({name:test.test_name, message: test.message, detailed_message:test.detailed_message, passed:test.status_passed})
         }
       }
 
       userProgress.push(data)
     }
 
-    return ctx.view.render('features/exercise/exercise_scoreboard', { project_leaderboard: projectInfo.leaderboard, userProgress: userProgress })
+    return ctx.view.render('features/exercise/exercise_scoreboard', { project_leaderboard: projectInfo.leaderboard, userProgress: userProgress, viewAsAdmin: admin })
   }
 
   async helper(ctx: HttpContext) {
@@ -418,7 +461,9 @@ export default class ExercisesController {
       e.account_team.find((f) => f.id_account === idAccount)
     )
 
-    let header = await this.headerBuilder(currentTeam, projectInfo.currentProject, projectInfo.leaderboard, ctx, idAccount)
+    let admin: boolean = idAccount === projectInfo.currentProject.id_account
+
+    let header = await this.headerBuilder(currentTeam, projectInfo.currentProject, projectInfo.leaderboard, ctx, admin)
     if (!header) {
       return ctx.response.redirect().back()
     }
@@ -452,7 +497,9 @@ export default class ExercisesController {
       e.account_team.find((f) => f.id_account === idAccount)
     )
 
-    let header = await this.headerBuilder(currentTeam, projectInfo.currentProject, projectInfo.leaderboard, ctx, idAccount)
+    let admin: boolean = idAccount === projectInfo.currentProject.id_account
+
+    let header = await this.headerBuilder(currentTeam, projectInfo.currentProject, projectInfo.leaderboard, ctx, admin)
     if (!header) {
       return ctx.response.redirect().back()
     }

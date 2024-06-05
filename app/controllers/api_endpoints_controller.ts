@@ -186,7 +186,6 @@ export default class ApiEndpointsController {
         return
       }
     } else {
-      console.log('ok')
       const repo = repoRequest.data
       repoId = repo.id
     }
