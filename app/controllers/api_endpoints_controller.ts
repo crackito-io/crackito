@@ -104,6 +104,9 @@ export default class ApiEndpointsController {
       response.internalServerError({ message: 'Error during the triggering of the pipeline.' })
       return
     }
+
+    logger.info({ tag: '#1E89F2' }, 'git event received and well managed')
+    response.ok({ message: 'OK' })
   }
 
   @inject()
@@ -195,6 +198,9 @@ export default class ApiEndpointsController {
       response.internalServerError({ message: 'Error during the triggering of the pipeline.' })
       return
     }
+
+    logger.info({ tag: '#1ED1E2' }, 'git event owner received and well managed')
+    response.ok({ message: 'OK' })
   }
 
   @inject()
@@ -318,7 +324,8 @@ export default class ApiEndpointsController {
       }
     }
 
-    return response.ok({ message: `${testsChanged.length} tests added/updated, ${stepsToCreate.length} steps added, ${testsToDelete.length} tests deleted, ${stepsToDelete.length} steps deleted` })
+    logger.info({ tag: '#1F9102' }, 'ci result event received and well managed')
+    response.ok({ message: `${testsChanged.length} tests added/updated, ${stepsToCreate.length} steps added, ${testsToDelete.length} tests deleted, ${stepsToDelete.length} steps deleted` })
   }
 
   @inject()
@@ -392,7 +399,8 @@ export default class ApiEndpointsController {
       }
     }
 
-    return response.ok({ message: `${stepsToCreate.length} steps added, ${stepsToDelete.length} steps deleted` })
+    logger.info({ tag: '#1FF602' }, 'ci result owner event received and well managed')
+    response.ok({ message: `${stepsToCreate.length} steps added, ${stepsToDelete.length} steps deleted` })
   }
 
   @inject()
