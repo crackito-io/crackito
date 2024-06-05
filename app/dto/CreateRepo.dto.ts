@@ -7,7 +7,6 @@ export const CreateRepoSchema = z.object({
   limit_datetime: z.string().datetime(),
   owner_id: z.number(),
   webhook_url: z.string(),
-  token_project: z.string(),
 })
 
 export type CreateRepoDto = z.infer<typeof CreateRepoSchema>

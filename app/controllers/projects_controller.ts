@@ -92,7 +92,7 @@ export default class ProjectsController {
   }
 
   @inject()
-  async createProject({ request, response, logger, i18n }: HttpContext, giteaApiService: GiteaApiService, githubApiService: GithubApiService, projectDatabaseService: ProjectDatabaseService) {
+  async createProject({ request, response, logger, i18n }: HttpContext, giteaApiService: GiteaApiService, githubApiService: GithubApiService, projectDatabaseService: ProjectDatabaseService, userDatabaseService: UserDatabaseService) {
     const body = request.body()
 
     let createRepoDto: CreateRepoDto
@@ -106,7 +106,7 @@ export default class ProjectsController {
 
     let webhook: GiteaWebhook = {
       url: createRepoDto.webhook_url,
-      secret: createRepoDto.token_project,
+      secret: uuidv4(),
     }
 
     // transform project name to git convention
@@ -155,6 +155,22 @@ export default class ProjectsController {
       }
     }
 
+    // get username from id
+    let user = await userDatabaseService.getUserFromId(createRepoDto.owner_id)
+    if (!user || !user.username) {
+      logger.info({ tag: '#F43A8D' }, 'User with this owner id does not exist')
+      response.badRequest({ message: 'User with this owner id does not exist' })
+      return
+    }
+
+    try {
+      await giteaApiService.addMemberToRepository(repoName, user.username)
+    } catch (e) {
+      logger.info({ tag: '#1125FD' }, `Error while adding owner to template repo in gitea : ${JSON.stringify(e)}`)
+      response.status(e.status).send({ status_code: e.status, status_message: e.message })
+      return
+    }
+
     try {
       await giteaApiService.addWebhook(repoName, webhook)
     } catch (e) {
@@ -170,7 +186,7 @@ export default class ProjectsController {
       true,
       createRepoDto.limit_datetime,
       createRepoDto.owner_id,
-      createRepoDto.token_project
+      webhook.secret
     )
     if (code !== 200) {
       try {
