@@ -291,14 +291,16 @@ export default class ExercisesController {
     }
 
     let rankCurrentTeam = leaderboard.findIndex((e) => e.id_team === currentTeam.id_team) + 1
-    let stepNotFinished = new Set()
+    let stepFinished = new Set()
+
+    console.log(currentTeam)
 
     for (let test of currentTeam.test) {
-      if (!test.status_passed) {
-        stepNotFinished.add(test.step_name)
+      if (test.status_passed) {
+        stepFinished.add(test.step_name)
       }
     }
-    let totalStepFinished = currentProject.step.length - stepNotFinished.size
+    let totalStepFinished = stepFinished.size
     return {
       title: currentProject.name,
       rank: rankCurrentTeam,
@@ -307,7 +309,7 @@ export default class ExercisesController {
         ? this.getPrintableTime(Date.now() - currentTeam.last_commit.getTime(), ctx)
         : '-',
       status: currentProject.status_open,
-      status_team: totalStepFinished === currentProject.step.length,
+      status_team: totalStepFinished === currentProject.step.length && currentProject.step.length !== 0,
       repo_name: currentProject.repo_name,
     }
   }
@@ -416,7 +418,7 @@ export default class ExercisesController {
         step_description: step.description,
         step_title: step.title,
         step_test_number: 0,
-        step_all_tests_passed: true,
+        step_all_tests_passed: currentTeam && currentTeam.test && currentTeam.test.length > 0 ? true : false,
         step_tests: [],
       }
       if (currentTeam) {
