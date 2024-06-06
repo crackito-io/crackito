@@ -1,4 +1,5 @@
 import { prisma } from '#config/app'
+import { Logger } from '@adonisjs/core/logger'
 import UserDatabaseService from './user_database_service.js'
 
 type TitleDescription = {
@@ -102,7 +103,8 @@ export default class ProjectDatabaseService {
     test_name: string,
     status_passed: boolean,
     message: string,
-    detailed_message: string
+    detailed_message: string,
+    logger: Logger
   ): Promise<boolean> {
     try {
       await prisma.test.upsert({
@@ -130,9 +132,14 @@ export default class ProjectDatabaseService {
         },
       })
     } catch (error) {
+      logger.error(
+        { tag: '#558212' },
+        `Upsert does not work for ${id_team}, ${step_name}, ${test_name}, ${status_passed}, ${message}, ${detailed_message} : ${JSON.stringify(error)}`
+      )
       return false
     }
 
+    logger.info({ tag: '#472719' }, `Upsert works for ${id_team}, ${step_name}, ${test_name}, ${status_passed}, ${message}, ${detailed_message}`)
     return true
   }
 
