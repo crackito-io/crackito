@@ -307,7 +307,7 @@ export default class ExercisesController {
         ? this.getPrintableTime(Date.now() - currentTeam.last_commit.getTime(), ctx)
         : '-',
       status: currentProject.status_open,
-      status_team: currentTeam.status_project_finished,
+      status_team: totalStepFinished === currentProject.step.length,
       repo_name: currentProject.repo_name,
     }
   }
