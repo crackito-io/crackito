@@ -293,8 +293,6 @@ export default class ExercisesController {
     let rankCurrentTeam = leaderboard.findIndex((e) => e.id_team === currentTeam.id_team) + 1
     let stepFinished = new Set()
 
-    console.log(currentTeam)
-
     for (let test of currentTeam.test) {
       if (test.status_passed) {
         stepFinished.add(test.step_name)
