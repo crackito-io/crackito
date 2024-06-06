@@ -173,7 +173,7 @@ model test {
   test_name        String   @db.VarChar(50)
   status_passed    Boolean?
   message          String?  @db.VarChar(50)
-  detailed_message String?  @db.VarChar(2500)
+  detailed_message String?  @db.Text
   team             team     @relation(fields: [id_team], references: [id_team], onDelete: NoAction, onUpdate: NoAction, map: "test_ibfk_1")
   step             step     @relation(fields: [repo_name, step_name], references: [repo_name, step_name], onDelete: Cascade, onUpdate: NoAction, map: "test_ibfk_2")
 
