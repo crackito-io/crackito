@@ -279,7 +279,8 @@ export default class ApiEndpointsController {
         test.test_name,
         test.status_passed,
         test.error,
-        test.message
+        test.message,
+        logger
       )
       if (!update) {
         logger.error({ tag: '#0FF241' }, 'One test update does not pass, potentially one test does not exist')
