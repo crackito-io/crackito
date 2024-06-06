@@ -293,11 +293,25 @@ export default class ExercisesController {
     let rankCurrentTeam = leaderboard.findIndex((e) => e.id_team === currentTeam.id_team) + 1
     let stepFinished = new Set()
 
+    // Créer un Map pour suivre les étapes et leur statut
+    let stepsStatusMap = new Map()
+
     for (let test of currentTeam.test) {
-      if (test.status_passed) {
-        stepFinished.add(test.step_name)
+      if (!stepsStatusMap.has(test.step_name)) {
+        stepsStatusMap.set(test.step_name, true)
+      }
+      if (!test.status_passed) {
+        stepsStatusMap.set(test.step_name, false)
       }
     }
+
+    // Ajouter les étapes valides au Set stepFinished
+    for (let [stepName, statusPassed] of stepsStatusMap) {
+      if (statusPassed) {
+        stepFinished.add(stepName)
+      }
+    }
+
     let totalStepFinished = stepFinished.size
     return {
       title: currentProject.name,
