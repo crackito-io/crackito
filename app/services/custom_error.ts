@@ -43,25 +43,25 @@ export class ExternalAPIError extends Error implements IsPrintableErrorMessage {
 
 export class GitRepositoryNotFound extends GitRepositoryError {
   constructor(repo: string) {
-    super(repo, 'repo_not_found')
+    super(repo, 'translate.repo_not_found')
   }
 }
 
 export class GitRepositoryAlreadyExists extends GitRepositoryError {
   constructor(repo: string) {
-    super(repo, 'repo_already_exists')
+    super(repo, 'translate.repo_already_exists')
   }
 }
 
 export class GitRepositoryNotATemplate extends GitRepositoryError {
   constructor(repo: string) {
-    super(repo, 'repo_not_template')
+    super(repo, 'translate.repo_not_template')
   }
 }
 
 export class GitRepositoryEmpty extends GitRepositoryError {
   constructor(repo: string) {
-    super(repo, 'repo_empty')
+    super(repo, 'translate.repo_empty')
   }
 }
 
@@ -72,7 +72,7 @@ export class GitContentFileNotFound implements IsPrintableErrorMessage {
   ) {}
 
   getPrintableErrorMessage(i18n: I18n): string {
-    return i18n.t('file_not_found', { file: this.file, repo: this.repo })
+    return i18n.t('translate.file_not_found', { file: this.file, repo: this.repo })
   }
 }
 
@@ -80,6 +80,6 @@ export class UserNotFound implements IsPrintableErrorMessage {
   constructor(private username: string) {}
 
   getPrintableErrorMessage(i18n: I18n): string {
-    return i18n.t('user_not_found', { username: this.username })
+    return i18n.t('translate.user_not_found_gitea', { username: this.username })
   }
 }

@@ -218,9 +218,9 @@ export default class ProjectDatabaseService {
   async createProject(
     repoName: string,
     name: string,
-    description: string,
+    description: string | null,
     statusOpen: boolean,
-    endTime: string,
+    endTime: string | null,
     idAccount: number,
     token: string
   ) {

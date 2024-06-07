@@ -15,6 +15,7 @@ import ApiEndpointsController from '#controllers/api_endpoints_controller'
 import AccountsController from '#controllers/accounts_controller'
 import FederationsController from '#controllers/federations_controller'
 import ProjectsController from '#controllers/projects_controller'
+import AdminProjectsController from '#controllers/admin_projects_controller'
 
 /*
  *=================================================================
@@ -57,6 +58,9 @@ router
     router.get('/', async ({ view }) => {
       return view.render('features/admin/home')
     })
+
+    router.get('/exercises/new', [AdminProjectsController, 'newProject'])
+    router.post('/exercises', [AdminProjectsController, 'createProject'])
 
     router
       .get('/accounts/new', [AccountsController, 'newAccount'])

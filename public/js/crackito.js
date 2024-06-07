@@ -28,6 +28,24 @@ async function createAccountXHR(email, password, confirmPassword, firstname, las
   })
 }
 
+async function createProjectXHR(name, description = null, template = null, dateProjectEnd = null) {
+  return fetch(`/admin/exercises/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Requested-With': 'xmlhttprequest',
+    },
+    body: JSON.stringify({
+      name: name,
+      description: description,
+      template: template,
+      limit_datetime: dateProjectEnd,
+    }),
+  }).then((response) => {
+    return response.json()
+  })
+}
+
 async function editTitleDescriptionStepXHR(repo_name, step_name, title, description) {
   return fetch(`/exercises/${repo_name}/scoreboard`, {
     method: 'PATCH',

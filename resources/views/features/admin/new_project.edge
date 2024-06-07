@@ -1,0 +1,110 @@
+@component('components/layouts/admin')
+    @slot('main')
+    <div class="pc-content">
+        <!-- [ breadcrumb ] start -->
+        <div class="page-header">
+            <div class="page-block">
+                <div class="row align-items-center">
+                    <div class="col-md-12">
+                        <ul class="breadcrumb mb-3">
+                            <li class="breadcrumb-item"><a href="/">{{ t('translate.breadcrumb_home_page') }}</a></li>
+                            <li class="breadcrumb-item"><a href="/admin">{{ t('translate.breadcrumb_home_admin_page') }}</a></li>
+                            <li class="breadcrumb-item"><a href="/admin/exercises">{{ t('translate.breadcrumb_home_admin_exercises_page') }}</a></li>
+                            <li class="breadcrumb-item" aria-current="page">{{ t('translate.breadcrumb_home_admin_exercises_new_page') }}</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="page-header-title">
+                            <h2 class="mb-0">{{ t('translate.new_exercise') }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- [ breadcrumb ] end -->
+
+        <!-- [ Main Content ] start -->
+        <div class="row">
+          <!-- [ sample-page ] start -->
+          <div class="col-sm-12">
+            <div style="transition:background-color 0.3s linear" id="card-create-user" class="card">
+              <div class="card-header">
+                  <h5>{{ t('translate.new_exercise_form_title') }}</h5>
+                  <div id="progress-create-user-outer" class="progress mt-3">
+                    <div id="progress-create-user-inner" class="progress-bar bg-success" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+              </div>
+              <form class="validate-me" id="validate-me" data-validate="" novalidate="true" autocomplete="off">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-lg-6">
+                      <div class="mb-3">
+                        <label class="form-label">{{ t('translate.new_exercise_form_label_title') }}:</label>
+                        <input class="form-control" placeholder="{{ t('translate.new_exercise_form_placeholder_title') }}" type="text" maxlength="100" name="name" required="">
+                        <small class="form-text text-muted">{{ t('translate.new_exercise_form_hint_title') }}</small>
+                      </div>
+                    </div>
+                    <div class="col-lg-6">
+                      <div class="mb-3">
+                        <label class="form-label" for="exampleFormControlTextarea1">{{ t('translate.new_exercise_form_label_description') }}: {{ t('translate.new_exercise_form_label_description_optional') }}</label>
+                        <textarea name="description" class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-lg-6">
+                      <div class="mb-3">
+                        <div class="form-check form-switch custom-switch-v1 mb-2">
+                          <input type="checkbox" class="form-check-input input-primary" id="switch-template" checked="checked">
+                          <label class="form-check-label" for="switch-template">{{ t('translate.new_exercise_form_template_checkbox') }}</label>
+                        </div>
+                        <label class="form-label">{{ t('translate.new_exercise_form_template_label') }}:</label>
+                        <select name="template" id="template-select" class="form-select">
+                          @each(temp in templates)
+                          <option>{{ temp }}</option>
+                          @endeach
+                        </select>
+                      </div>
+                    </div>
+                    <div class="col-lg-6">
+                      <div class="mb-3">
+                        <div class="form-check form-switch custom-switch-v1 mb-2">
+                          <input type="checkbox" class="form-check-input input-primary" id="switch-date">
+                          <label class="form-check-label" for="switch-date">{{ t('translate.new_exercise_form_set_time_limit_checkbox') }}</label>
+                        </div>
+                        <label for="date-project-end" class="form-label">{{ t('translate.new_exercise_form_set_time_limit_label') }}:</label>
+                        <input name="date-project-end" class="form-control" type="datetime-local" id="date-project-end">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-footer text-end">
+                  <input type="submit" class="btn btn-primary me-2" value="{{ t('translate.new_exercise_form_submit_button') }}">
+                  <input type="reset" class="btn btn-secondary" value="{{ t('translate.new_exercise_form_reset_button') }}">
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+    </div>
+    <script>
+      const MESSAGES = {
+          missingValue: {
+            default: "{{ t('translate.form_input_error_message_required_field') }}",
+          },
+          wrongLength: {
+            over: "{{ t('translate.form_input_error_message_length_exceeded_first_name') }}",
+          }
+        }
+    </script>
+    <style>
+      .disabled {
+        background-color: #e9ecef;
+        cursor: not-allowed;
+      }
+    </style>
+    <script src="/js/crackito.js"></script>
+    <script src="/js/new-project.js"></script>
+    @end
+@end

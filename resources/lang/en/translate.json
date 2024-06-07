@@ -54,6 +54,8 @@
 
     "internal_server_error": "Internal server error...",
     "error":"Error!",
+    "external_error_github":"Error (from Github service)!",
+    "external_error_gitea": "Error (from Gitea service)!",
     "success":"Success!",
     "unknown_error":"An unknown error occured while the page was loading",
 
@@ -91,8 +93,8 @@
     "new_user_form_hint_confirm_password": "must match the password field",
 
 
-    "new_user_form_input_error_message_length_exceeded_first_name": "Please shorten this text to no more than 50 characters",
-    "new_user_form_input_error_message_required_field": "Please fill out this field",
+    "form_input_error_message_length_exceeded_first_name": "Please shorten this text to no more than 50 characters",
+    "form_input_error_message_required_field": "Please fill out this field",
     "new_user_form_input_error_message_passwords_not_match": "Your passwords do not match",
     "new_user_form_input_error_message_bad_password_format": "Please match the requested password format",
     "new_user_form_input_error_message_bad_email_format": "Please match the requested email format",
@@ -182,5 +184,37 @@
     "ownerid_not_exists":"The user you assign as owner does not exist",
     "ok":"OK",
     "not_admin": "You are not able to do that you're not the owner of the project!",
-    "step_updated_success": "The exercise has been updated"
+    "step_updated_success": "The exercise has been updated",
+
+    "new_exercise": "New exercise",
+    "breadcrumb_home_admin_exercises_page": "Exercises",
+    "breadcrumb_home_admin_exercises_new_page": "New",
+    "new_exercise_form_submit_button":"Create exercise",
+    "new_exercise_form_reset_button":"Reset",
+    "new_exercise_form_title":"Create a new exercise",
+    "new_exercise_form_label_title":"Title",
+    "new_exercise_form_hint_title":"use short and effective title, max 100 chars",
+    "new_exercise_form_placeholder_title":"Enter title",
+    "new_exercise_form_label_description":"Description",
+    "new_exercise_form_label_description_optional":"(Optional)",
+
+    "new_exercise_form_set_time_limit_checkbox": "Set a time limit",
+
+    "new_exercise_form_set_time_limit_label": "Datetime",
+
+    "new_exercise_form_template_label": "Template",
+
+    "new_exercise_form_template_checkbox": "Use a template (recommended)",
+
+    "project_create_field_not_valid":"One or multiple fields are not valid",
+
+    "project_created":"Project created successfully",
+
+    "repo_not_found":"Repo not found",
+    "repo_already_exists":"Repo already exists",
+    "repo_not_template": "This repo is not a tempalte",
+    "repo_empty":"Repo empty",
+
+    "file_not_found":"File not found",
+    "user_not_found_gitea":"User not found"
 }
