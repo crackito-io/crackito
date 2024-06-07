@@ -218,5 +218,7 @@
     "file_not_found":"File not found",
     "user_not_found_gitea":"User not found",
 
-    "new_project_form_input_error_message_datetime_less_than_today": "The datetime must be more than the current datetime"
+    "new_project_form_input_error_message_datetime_less_than_today": "The datetime must be more than the current datetime",
+
+    "create_projects_missing_perm":"You do not have the rights to create projects. Please contact your organisation's administrator."
 }

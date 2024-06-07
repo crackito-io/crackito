@@ -59,8 +59,12 @@ router
       return view.render('features/admin/home')
     })
 
-    router.get('/exercises/new', [AdminProjectsController, 'newProject'])
-    router.post('/exercises', [AdminProjectsController, 'createProject'])
+    router
+      .get('/exercises/new', [AdminProjectsController, 'newProject'])
+      .use(middleware.permissions(['create_projects']))
+    router
+      .post('/exercises', [AdminProjectsController, 'createProject'])
+      .use(middleware.permissions(['create_projects']))
 
     router
       .get('/accounts/new', [AccountsController, 'newAccount'])
