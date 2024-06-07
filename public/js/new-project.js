@@ -11,7 +11,7 @@ document.getElementById('switch-template').addEventListener('change', function (
 const templateSelect = document.getElementById('template-select');
 templateSelect.disabled = !document.getElementById('switch-template').checked;
 if (templateSelect.disabled) {
-  templateSelect.classList.add('disabled');
+  templateSelect.classList.add('disabled')
 }
 
 document.getElementById('switch-date').addEventListener('change', function () {
@@ -24,8 +24,8 @@ document.getElementById('switch-date').addEventListener('change', function () {
   }
 })
 
-const dateInput = document.getElementById('date-project-end');
-dateInput.disabled = !document.getElementById('switch-date').checked;
+const dateInput = document.getElementById('date-project-end')
+dateInput.disabled = !document.getElementById('switch-date').checked
 if (dateInput.disabled) {
   dateInput.classList.add('disabled')
 }
@@ -35,7 +35,14 @@ let bouncer
 function init_bouncer() {
   bouncer = new Bouncer('[data-validate]', {
     disableSubmit: true,
-    // messages: MESSAGES,
+    customValidations: {
+      datetimeLessThanToday: function (e) {
+        if (e.getAttribute('id') === 'date-project-end') {
+          return new Date(e.value) < new Date()
+        }
+      },
+    },
+    messages: MESSAGES,
   })
 }
 
@@ -48,6 +55,10 @@ init_bouncer()
 
 let form = document.getElementById('validate-me')
 
+form.addEventListener('reset', function () {
+  reset_bouncer()
+})
+
 document.addEventListener('bouncerFormInvalid', function (e) {
     window.scrollTo(0, e.detail.errors[0].offsetTop)
   },
@@ -56,10 +67,8 @@ document.addEventListener('bouncerFormInvalid', function (e) {
 
 document.addEventListener('bouncerFormValid', function (e) {
     let formdata = new FormData(form)
-    console.log('data', formdata)
 
     createProjectXHR(formdata.get('name'), formdata.get('description'), formdata.get('template'), formdata.get('date-project-end')).then((data) => {
-      console.log(data)
       let type
       if (Array.isArray(data)) {
         let interval = 0

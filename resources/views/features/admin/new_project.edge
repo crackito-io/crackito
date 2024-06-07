@@ -74,7 +74,7 @@
                           <label class="form-check-label" for="switch-date">{{ t('translate.new_exercise_form_set_time_limit_checkbox') }}</label>
                         </div>
                         <label for="date-project-end" class="form-label">{{ t('translate.new_exercise_form_set_time_limit_label') }}:</label>
-                        <input name="date-project-end" class="form-control" type="datetime-local" id="date-project-end">
+                        <input name="date-project-end" class="form-control" type="datetime-local" id="date-project-end" required="">
                       </div>
                     </div>
                   </div>
@@ -90,6 +90,7 @@
     </div>
     <script>
       const MESSAGES = {
+          datetimeLessThanToday: "{{ t('translate.new_project_form_input_error_message_datetime_less_than_today') }}",
           missingValue: {
             default: "{{ t('translate.form_input_error_message_required_field') }}",
           },

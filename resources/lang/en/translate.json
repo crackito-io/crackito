@@ -193,7 +193,7 @@
     "new_exercise_form_reset_button":"Reset",
     "new_exercise_form_title":"Create a new exercise",
     "new_exercise_form_label_title":"Title",
-    "new_exercise_form_hint_title":"use short and effective title, max 100 chars",
+    "new_exercise_form_hint_title":"use short and effective title, max 50 chars",
     "new_exercise_form_placeholder_title":"Enter title",
     "new_exercise_form_label_description":"Description",
     "new_exercise_form_label_description_optional":"(Optional)",
@@ -216,5 +216,7 @@
     "repo_empty":"Repo empty",
 
     "file_not_found":"File not found",
-    "user_not_found_gitea":"User not found"
+    "user_not_found_gitea":"User not found",
+
+    "new_project_form_input_error_message_datetime_less_than_today": "The datetime must be more than the current datetime"
 }
