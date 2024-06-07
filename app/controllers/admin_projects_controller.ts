@@ -16,7 +16,7 @@ export default class AdminProjectsController {
   async newProject(ctx: HttpContext, githubApiService: GithubApiService) {
     let templates
     try {
-      //templates = await githubApiService.getTemplatesList()
+      templates = await githubApiService.getTemplatesList()
     } catch (e) {
       console.log(e)
       ctx.session.flash('notifications', {
@@ -27,8 +27,7 @@ export default class AdminProjectsController {
       return ctx.response.redirect().back()
     }
 
-    //let templatesName = templates.data.map((t) => t.name)
-    let templatesName = [ 'java' ]
+    let templatesName = templates.data.map((t) => t.name)
     return ctx.view.render('features/admin/new_project', { templates: templatesName })
   }
 
